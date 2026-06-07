@@ -52,6 +52,7 @@
 - **配置/体裁**: 記事メタ（日付・読了時間）の直後・本文 prose の前。`rounded-md border border-border px-5 py-4` の囲みに、ラベル「目次」と `<ol>`（`text-sm` / `--muted` / `hover:text-accent` + `hover:underline`）。
 - **a11y**: `<nav aria-label="目次">` のランドマークで命名。**見出しアウトラインを汚さないようラベルは `<p>`**（`<h2>` にしない）＝記事の見出し階層は h1→本文 h2 のまま。リンク先は Astro 自動 `id`（`#slug`）。
 - **アンカー移動の着地体験（zero-JS）**: 目次の `#slug` ジャンプとスキップリンクの `#main` ジャンプ共通で、`:root`(html) に `scroll-padding-top: 1.5rem`（24px=8pxグリッド）を付け、着地見出しが画面端に貼り付かないよう上余白を確保する。`scroll-behavior: smooth` で移動量を可視化し現在位置を見失わせない。**`prefers-reduced-motion: reduce` 時は `scroll-behavior: auto !important` に戻す**（モーション過敏配慮・既存の transition 無効化ブロックと同居）。
+- **見出しアンカー「#」（zero-JS / 新規依存ゼロ）**: 本文 prose の H2–H4 末尾に同 id への deep-link「#」を付与し、読者がセクション URL を取得できるようにする（技術記事の定番アフォーダンス）。生成は `astro.config` の小さな rehype 関数 `rehypeHeadingAnchors`＝Astro が既に作る HAST ツリーを手で歩いて `<a class="heading-anchor" href="#id">` を足すだけ（`unist-util-visit` 等も import しない＝**新規 npm 依存ゼロ**・出力は静的 `<a>` のみ＝**zero-JS**）。Astro の id 採番はデフォルトでユーザー rehype より後に走るため、Astro 同梱の `rehypeHeadingIds`（新規 install なし）を `rehypePlugins` の先頭に置き id 確定後に「#」を足す（公式の順序パターン）。**id を持つ見出しのみ対象**＝出典 footer の `<h2>`（id なし・prose 外）には付かず TOC のスラッグとも完全一致。**体裁**: 通常は `opacity:0` で隠し、見出し hover 時のみ `--muted`→`--accent` で淡く表示（`margin-left:.35em`・下線なし）。**a11y**: アンカーは `aria-hidden="true"`＋`tabindex="-1"`＝マウス利用者向けの補助に限定し、キーボード/AT 利用者には目次(TOC)が既に deep-link を提供するため二重化・タブストップ増を避ける。
 
 ## SEO / 共有メタ（OGP・Twitter Card）
 - **方針**: リンクプレビュー（Slack/Discord/Facebook/X 等）を zero-JS で成立させる。`BaseLayout` の `<head>` に静的 `<meta>` のみで構成（クライアントJSなし・新規依存なし）。

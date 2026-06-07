@@ -59,6 +59,28 @@ body {
   text-wrap: pretty;
 }
 
+/* 見出しアンカー「#」（zero-JS / 新規依存ゼロ）。astro.config の小さな rehype 関数が
+   本文 prose の h2–h4 末尾に <a class="heading-anchor" href="#id"> を足す。通常は
+   opacity:0 で隠し、見出し hover 時のみ淡く表示＝マウス利用者がセクション URL を取得
+   できる補助（キーボード/AT は目次(TOC)が deep-link を提供）。色変化はリンク方針に従う。*/
+.prose :where(h2, h3, h4) .heading-anchor {
+  margin-left: 0.35em;
+  color: var(--muted);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
+}
+.prose :where(h2, h3, h4):hover .heading-anchor,
+.heading-anchor:hover {
+  opacity: 1;
+}
+.heading-anchor:hover {
+  color: var(--accent);
+}
+
 /* テキスト選択をアクセントで色付け（light/dark 自動追従・zero-JS）。
    color-mix で 18% の地色にして本文の可読性を損なわない。 */
 ::selection {
