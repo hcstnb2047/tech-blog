@@ -1,0 +1,33 @@
+name: safety-gate
+
+# 公開技術ブログの「秘密 / PII / 健康情報」流出ゲート。
+# push と PR のたびに Gitleaks を実行し、検出された場合はジョブを失敗させて
+# 公開（マージ・デプロイ）を止める。
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: gitleaks scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # 履歴も走査対象にする（過去コミットへの混入も検出するため）。
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          # リポジトリ直下の .gitleaks.toml（デフォルトルール + カスタム PII/健康 denylist）を使う。
+          GITLEAKS_CONFIG: .gitleaks.toml
+          # 検出時に必ず失敗させる（公開を止める安全弁）。
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+        # gitleaks-action は検出時に非ゼロ終了 → ジョブが fail する。
+        # continue-on-error は付けない（失敗を握りつぶさない）。

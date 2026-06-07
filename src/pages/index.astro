@@ -1,0 +1,31 @@
+---
+// 記事一覧トップ。各記事へ 1 タップで遷移できる最小リスト。
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const articles = (await getCollection('articles')).sort(
+  (a, b) =>
+    new Date(b.data.publishedAt).valueOf() -
+    new Date(a.data.publishedAt).valueOf()
+);
+---
+
+<BaseLayout title="技術ブログ" description="公開技術ブログ">
+  <h1>技術ブログ</h1>
+  {
+    articles.length === 0 ? (
+      <p>記事はまだありません。</p>
+    ) : (
+      <ul>
+        {articles.map((article) => (
+          <li>
+            <a href={`/articles/${article.id}/`}>{article.data.title}</a>
+            <time datetime={article.data.publishedAt}>
+              {article.data.publishedAt}
+            </time>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</BaseLayout>

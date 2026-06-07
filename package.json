@@ -1,0 +1,16 @@
+{
+  "name": "tech-blog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "公開技術ブログ（Astro 静的サイト・content-first SSG）",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.0.0"
+  }
+}

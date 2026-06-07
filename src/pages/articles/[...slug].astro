@@ -1,0 +1,40 @@
+---
+// 1 ページ 1 記事・独立 URL。Markdown 本文をレンダリングする。
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('articles');
+  return articles.map((article) => ({
+    params: { slug: article.id },
+    props: { article },
+  }));
+}
+
+const { article } = Astro.props;
+const { Content } = await render(article);
+---
+
+<BaseLayout title={article.data.title} description={article.data.description}>
+  <article>
+    <h1>{article.data.title}</h1>
+    <time datetime={article.data.publishedAt}>{article.data.publishedAt}</time>
+
+    <Content />
+
+    <footer>
+      <h2>出典</h2>
+      <ul>
+        {
+          article.data.sources.map((source) => (
+            <li>
+              <a href={source.url} rel="noopener noreferrer" target="_blank">
+                {source.title}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </footer>
+  </article>
+</BaseLayout>
