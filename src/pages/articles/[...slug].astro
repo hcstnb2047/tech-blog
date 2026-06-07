@@ -2,6 +2,8 @@
 // 1 ページ 1 記事・独立 URL。Markdown 本文を prose でレンダリングする。
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDateJa } from '../../utils/date';
+import { readingTimeMin } from '../../utils/readingTime';
 
 export async function getStaticPaths() {
   const articles = await getCollection('articles');
@@ -12,21 +14,65 @@ export async function getStaticPaths() {
 }
 
 const { article } = Astro.props;
-const { Content } = await render(article);
+const { Content, headings } = await render(article);
+// 目次（TOC）: Astro が Markdown 見出しに自動採番する id（github-slugger）と
+// render() の headings をそのまま使う＝rehype 等の新規依存ゼロ・zero-JS。
+// セクション見出し（H2）のみを対象にし、短い記事ではノイズなので 2 本以上で表示。
+const toc = headings.filter((h) => h.depth === 2);
 ---
 
-<BaseLayout title={article.data.title} description={article.data.description}>
+<BaseLayout
+  title={article.data.title}
+  description={article.data.description}
+  type="article"
+  publishedAt={article.data.publishedAt}
+>
   <article>
+    {/* 記事内からの戻り導線（zero-JS・ヘッダー/フッターに加えて本文上にも） */}
+    <a
+      href="/"
+      class="mb-6 inline-block text-sm text-muted no-underline transition-colors hover:text-accent"
+      >← 記事一覧へ</a
+    >
     <h1 class="mb-2 text-3xl font-bold leading-tight tracking-tight">
       {article.data.title}
     </h1>
-    <time
-      class="mb-10 block text-sm text-muted"
-      datetime={article.data.publishedAt}>{article.data.publishedAt}</time
-    >
+    <div class="mb-10 flex items-center gap-2 text-sm text-muted">
+      <time datetime={article.data.publishedAt}>
+        {formatDateJa(article.data.publishedAt)}
+      </time>
+      <span aria-hidden="true">·</span>
+      <span>約{readingTimeMin(article.body)}分で読めます</span>
+    </div>
+
+    {/* 目次（zero-JS / 新規依存なし）。nav landmark に aria-label を付け、
+        見出しアウトラインを汚さないようラベルは <p>（見出しにしない）。
+        各リンクは Astro 自動採番の #slug へジャンプ＝セクション deep-link 可能。 */}
+    {
+      toc.length >= 2 && (
+        <nav
+          aria-label="目次"
+          class="mb-10 rounded-md border border-border px-5 py-4"
+        >
+          <p class="mb-2 text-sm font-semibold text-muted">目次</p>
+          <ol class="space-y-1.5 text-sm">
+            {toc.map((h) => (
+              <li>
+                <a
+                  href={`#${h.slug}`}
+                  class="text-muted no-underline underline-offset-2 transition-colors hover:text-accent hover:underline"
+                >
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
 
     <div
-      class="prose prose-neutral max-w-none dark:prose-invert prose-headings:tracking-tight prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-code:before:content-none prose-code:after:content-none"
+      class="prose prose-neutral max-w-none dark:prose-invert prose-headings:tracking-tight prose-a:text-accent prose-a:font-normal prose-a:no-underline prose-a:underline-offset-2 hover:prose-a:underline prose-code:font-normal prose-code:before:content-none prose-code:after:content-none [&_:not(pre)>code]:rounded-md [&_:not(pre)>code]:bg-fg/[0.06] [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:text-[0.9em] [&_:not(pre)>code]:text-fg"
     >
       <Content />
     </div>
@@ -38,7 +84,7 @@ const { Content } = await render(article);
           article.data.sources.map((source) => (
             <li>
               <a
-                class="text-accent hover:underline"
+                class="text-accent underline-offset-2 transition-colors hover:underline"
                 href={source.url}
                 rel="noopener noreferrer"
                 target="_blank"

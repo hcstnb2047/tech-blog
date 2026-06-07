@@ -12,6 +12,7 @@
 - **本文**: prose 既定（16px / 行間≈1.75）。左揃え。
 - **読み幅**: 本文の1行を **60–75ch** に収める（現行 `max-w-2xl`＝約70–75ch。prose の `max-w-none` 上書きはコンテナ幅で制御）。
 - **見出し**: h1 = text-3xl / font-bold / leading-tight / tracking-tight。見出しは `tracking-tight`。
+- **トップのヒーロー（サイト名）**: 例外的に主役級。`text-4xl`（sm:`text-5xl`）/ font-bold / tracking-tight。下に `--muted` のタグライン（`SITE_DESCRIPTION`）を `mt-3`(12px) で添え、`pb-8`(32px)＋`border-b` で本文と分離。記事ページの h1（text-3xl）とは役割が異なる。
 - **副次テキスト**: メタ情報・出典・footer は text-sm / text-muted。
 - フォント: `system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Segoe UI", Roboto, sans-serif`（global.css の `--font-sans` を昇格）。
 
@@ -29,13 +30,58 @@
 | `--accent` | `#2f5bd0` | `#6ea0ff` | リンク/強調 |
 | `--border` | `#e6e7e3` | `#262c36` | 罫線 |
 - `@theme` で `bg-bg/text-fg/text-muted/text-accent/border-border` として公開（dark 自動追従）。
-- コントラスト: 本文 fg/bg は WCAG AA を満たす（⑤で客観確認）。
+- **`color-scheme`**: `:root` に `color-scheme: light dark` を宣言。UA にライト/ダーク両対応を伝え、ネイティブUI（スクロールバー/フォーム部品）と CSS 適用前の初期描画もダーク時に背景へ追従させる（ダーク時の白フラッシュ防止・zero-JS）。`prefers-color-scheme` のトークン差し替えと併用。
+- **アクセント運用**: accent はリンク/フォーカス/選択ハイライトに限定（多用しない＝清潔リッチ）。影は使わず罫線(`--border`)で面を分ける方針を維持（light/dark とも陰影レス）。
+- **テキスト選択**: `::selection` を `color-mix(in srgb, var(--accent) 18%, transparent)` で淡く色付け（light/dark 自動追従・本文の可読性を保つ薄さ）。
+- **フォーカス可視化(a11y)**: `:where(a,button,[tabindex]):focus-visible` に `outline: 2px var(--accent)` + `outline-offset:2px`。マウス時は出さず（`:focus-visible`）キーボード操作時のみ表示。一覧カードは `group-focus-within:text-accent` で hover と同じ affordance をキーボードにも付与。
+- **トランジション**: リンクの色変化に `transition-colors`。`prefers-reduced-motion: reduce` で `transition-duration` を実質無効化（モーション過敏配慮）。
+- **コントラスト(WCAG AA 客観確認 / 相対輝度で算出)**: light = muted/bg ≈ 4.76、accent/bg ≈ 5.86。dark = muted/bg ≈ 7.50、accent/bg ≈ 7.33。fg/bg は両モードとも十分高い。いずれも本文(4.5)基準を満たす（text-xs の日付も normal 扱いで満たす）。→ トークン値の変更は不要と判断。
 
 ## コンポーネント原則
-- **角丸**: Expressive Code は `borderRadius: 8px`。他要素も 8px 基調。
-- **リンク**: prose 内は `text-accent` / 下線なし → hover で下線（`prose-a:no-underline hover:prose-a:underline`）。
+- **角丸**: Expressive Code は `borderRadius: 8px`。他要素も 8px 基調（inline code は `rounded-md`）。
+- **リンク**: prose 内は `text-accent` / 太字化しない（`prose-a:font-normal`＝色で識別）/ 下線なし → hover で下線（`prose-a:no-underline prose-a:underline-offset-2 hover:prose-a:underline`）。
 - **コードブロック**: Expressive Code を主役級に（github-light/dark・行ハイライト・コピー）。
+- **インラインコード**: `prose-code:before/after:content-none` でバッククォート除去。`:not(pre)>code` のみを対象に淡い地色（`bg-fg/[0.06]`＝ライト/ダーク自動追従）＋ `px-1.5 py-0.5`＋`rounded-md`＋`text-[0.9em]`＋太字化しない（`font-normal`）。`:not(pre)>code` で限定し Expressive Code のブロックには干渉させない。
+- **本文見出しの縦リズム**: prose 既定の見出し余白は 8px グリッドに整合（h2 上48/下24px、h3 上32/下12px）ため上書きしない。記事 h1→`time`→本文は `mb-2`(8)→`mb-10`(40) でスケール内。
 - **密度**: 一覧は `py-5→py-6` のゆったりリズム。影は使わず罫線(`border-border`)で区切る。
+- **記事一覧の行**: タイトル(h2 / text-lg / font-semibold)＋ `description` 1行(text-sm / `--muted` / `mt-1`)＋日付(time / text-xs / `--muted` / `mt-2`)。行は `group relative`、タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。hover で `group-hover:text-accent`＝リンク affordance。
+
+## 目次（記事内 TOC）
+- **方針**: 技術記事のセクション間移動と deep-link を zero-JS で提供する。Astro が Markdown 見出しに自動採番する `id`（github-slugger）と `render()` の `headings` をそのまま使い、**rehype 等の新規依存は入れない**。
+- **対象**: セクション見出し（`depth === 2` の H2）のみ。`toc.length >= 2` の記事だけ表示（短い記事ではノイズになるため）。
+- **配置/体裁**: 記事メタ（日付・読了時間）の直後・本文 prose の前。`rounded-md border border-border px-5 py-4` の囲みに、ラベル「目次」と `<ol>`（`text-sm` / `--muted` / `hover:text-accent` + `hover:underline`）。
+- **a11y**: `<nav aria-label="目次">` のランドマークで命名。**見出しアウトラインを汚さないようラベルは `<p>`**（`<h2>` にしない）＝記事の見出し階層は h1→本文 h2 のまま。リンク先は Astro 自動 `id`（`#slug`）。
+- **アンカー移動の着地体験（zero-JS）**: 目次の `#slug` ジャンプとスキップリンクの `#main` ジャンプ共通で、`:root`(html) に `scroll-padding-top: 1.5rem`（24px=8pxグリッド）を付け、着地見出しが画面端に貼り付かないよう上余白を確保する。`scroll-behavior: smooth` で移動量を可視化し現在位置を見失わせない。**`prefers-reduced-motion: reduce` 時は `scroll-behavior: auto !important` に戻す**（モーション過敏配慮・既存の transition 無効化ブロックと同居）。
+- **見出しアンカー「#」（zero-JS / 新規依存ゼロ）**: 本文 prose の H2–H4 末尾に同 id への deep-link「#」を付与し、読者がセクション URL を取得できるようにする（技術記事の定番アフォーダンス）。生成は `astro.config` の小さな rehype 関数 `rehypeHeadingAnchors`＝Astro が既に作る HAST ツリーを手で歩いて `<a class="heading-anchor" href="#id">` を足すだけ（`unist-util-visit` 等も import しない＝**新規 npm 依存ゼロ**・出力は静的 `<a>` のみ＝**zero-JS**）。Astro の id 採番はデフォルトでユーザー rehype より後に走るため、Astro 同梱の `rehypeHeadingIds`（新規 install なし）を `rehypePlugins` の先頭に置き id 確定後に「#」を足す（公式の順序パターン）。**id を持つ見出しのみ対象**＝出典 footer の `<h2>`（id なし・prose 外）には付かず TOC のスラッグとも完全一致。**体裁**: 通常は `opacity:0` で隠し、見出し hover 時のみ `--muted`→`--accent` で淡く表示（`margin-left:.35em`・下線なし）。**a11y**: アンカーは `aria-hidden="true"`＋`tabindex="-1"`＝マウス利用者向けの補助に限定し、キーボード/AT 利用者には目次(TOC)が既に deep-link を提供するため二重化・タブストップ増を避ける。
+
+## SEO / 共有メタ（OGP・Twitter Card）
+- **方針**: リンクプレビュー（Slack/Discord/Facebook/X 等）を zero-JS で成立させる。`BaseLayout` の `<head>` に静的 `<meta>` のみで構成（クライアントJSなし・新規依存なし）。
+- **ドキュメントタイトルのブランディング**: ブラウザタブ/検索結果向けに `<title>` をサイト名でブランディングする。整形は `BaseLayout` で一元化（`title === SITE_NAME ? SITE_NAME : `${title} — ${SITE_NAME}``）。トップは二重化回避でサイト名のみ、記事/404 等は「ページ名 — サイト名」。**`og:title`/`twitter:title` は素の `title`** を保つ（リンクプレビューにサイト名を重ねない＝ドキュメントタイトルと分離）。各ページは素のページ名を `title` に渡すだけでよい（404 もブランディング付与は層に委譲）。
+- **theme-color（モバイルブラウザ UI の質感）**: `<meta name="theme-color" media="(prefers-color-scheme: …)">` を light/dark の 2 本出し、モバイルのアドレスバー等を `--bg`（light `#fcfcfb`／dark `#0e1116`）に同色化する（zero-JS・新規依存なし）。**値は `global.css` の `--bg` と手動同期**（meta は CSS 変数を読めないため。トークン変更時は両方更新）。
+- **常時出力**: `og:type`（既定 `website`／記事は `article`）・`og:title`・`og:description`・`og:site_name`・`og:locale=ja_JP`・`twitter:card=summary`・`twitter:title`・`twitter:description`。
+- **絶対URL依存タグは条件付き**: `canonical` / `og:url` は **`astro.config` の `site` 設定後のみ**出力（`new URL(Astro.url.pathname, Astro.site)`）。ドメイン未確定の現状では誤った相対URLを露出させないため出さない＝`site` を設定すれば自動で有効化される。
+- **画像**: OGP/Twitter 画像は絶対URL必須のためドメイン確定まで保留（`twitter:card` は `summary`）。確定後に `og:image` と `summary_large_image` を検討。
+- **構造化データ（JSON-LD）**: 検索エンジンにページ種別を伝えるため `<script type="application/ld+json">` を `<head>` に出力する。これは UA が**実行しない静的データ**（解釈して読むだけ）なので zero-JS 方針に反しない。トップ/一覧は `WebSite`（`name`/`description`/`inLanguage=ja-JP`）、記事は `BlogPosting`（`headline`/`description`/`inLanguage`/`datePublished`/`author`/`publisher`）。**`url`/`mainEntityOfPage` は絶対URL必須のため `canonical` と同様に `astro.config` の `site` 設定時のみ付与**（未設定なら省略＝誤URLを出さない）。整形は `BaseLayout` で一元化。
+- **記事ページ**: `type="article"` ＋ `article:published_time`（`publishedAt`）を付与。`BaseLayout` の Props は `type?: 'website'|'article'` / `publishedAt?: string`（任意）。
+
+## 読了時間 / 404
+
+- **読了時間（メタ）**: 一覧・記事ページの日付の隣に「約N分」を併記し、記事の分量を読む前に伝える（一覧の「読みたくなる形」を強化）。算出は `src/utils/readingTime.ts` の `readingTimeMin()`（ビルド時・新規依存なし）。日本語主体のため語数でなく**文字数ベース（500字/分）**で概算し、コードブロック/インラインコード/リンク記法は散文でないため除外して数える。区切りは中黒（`·`・`aria-hidden`）で日付と並置（一覧 text-xs / 記事 text-sm・ともに `--muted`）。
+- **404 ページ**: `src/pages/404.astro`（静的ビルドで `404.html` を生成）。`BaseLayout` 準拠・既存トークンのみ・zero-JS。`text-accent` の「404」ラベル＋h1＋説明＋「← 記事一覧へ戻る」リンク（`href="/"`）。ヘッダー/フッターの戻り導線も共通レイアウト経由でそのまま機能する。
+
+## a11y / 細部の体裁
+- **スキップリンク**: `<body>` 先頭に「本文へスキップ」（`href="#main"`）。通常は `sr-only` で視覚的に隠し、キーボードフォーカス時のみ `focus:not-sr-only` で左上に表示（`bg-bg`＋`border-border`＋`text-accent`）。`<main id="main">` を着地点に。繰り返すヘッダーをスキップして本文へ直接移動できる（zero-JS・新規依存なし）。
+- **日付表記**: `publishedAt`（`YYYY-MM-DD`）は日本語表記（例: `2026年6月7日`）で表示する。整形は `src/utils/date.ts` の `formatDateJa()`（ビルド時・`new Date()` を介さず文字列分解で TZ ズレを回避）。機械可読性のため `<time datetime>` には ISO 値（`YYYY-MM-DD`）を保持。一覧・記事ページとも同じ整形を使う。
+
+## ヘッダー / フッター体裁
+- **ヘッダー**: サイト名（`font-bold tracking-tight`）はトップへのリンク。`transition-colors` + `hover:text-accent`。`max-w-2xl px-5 py-4` で本文幅に揃える。
+- **フッター**: `flex justify-between` で「© year サイト名」（左）と「トップへ」リンク（右）を配置。全体 `text-sm text-muted`、リンクは `hover:text-accent`。zero-JS のページ内移動補助（`href="/"`）。
+- **記事内の戻り導線**: 記事ページ本文上部に「← 記事一覧へ」（`href="/"`・`text-sm text-muted` / `hover:text-accent` / `transition-colors`）を配置。ヘッダー/フッターに加え本文先頭にも戻り口を用意（読了直前でなくスクロール前に到達できる）。
+
+## 折り返し品質 / 印刷（zero-JS）
+- **見出しの折り返し**: `:where(h1,h2,h3,h4)` に `text-wrap: balance`＝複数行見出しの行長を均等化し「ぶら下がり1単語」を防ぐ（清潔リッチ・タイポ階層 G3 の延長）。
+- **本文の折り返し**: `:where(p,li)` に `text-wrap: pretty`＝末尾のオーファン行を抑えラグを整える。いずれも `:where()`(specificity 0) で prose/Tailwind を阻害せず、未対応ブラウザは従来挙動（プログレッシブエンハンスメント・新規依存なし）。
+- **印刷 / PDF（`@media print`）**: 技術記事を紙/PDF で読む読者向けに本文を主役化。ヘッダー/フッター/目次(`nav[aria-label="目次"]`)/スキップリンクを `display:none`、OS がダークでも紙は `color-scheme:light`＋白地黒字に固定、`main` の幅/余白制約を解除、`pre/code` を `pre-wrap` で折り返し、本文中の外部リンク(`.prose a[href^="http"]`)に URL を `::after` で併記して参照先を辿れるようにする。すべて `@media print` 内＝画面表示に非干渉。
 
 ## デザイン参照（反復間で再利用）
 | URL | 要点 | 適用箇所 |

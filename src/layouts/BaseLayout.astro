@@ -1,6 +1,6 @@
 ---
 // 全ページ共通レイアウト（Tailwind v4）。
-// - SEO メタ（title / description）
+// - SEO メタ（title / description / OGP / Twitter Card）
 // - グローバルCSS（Tailwind + typography + デザイントークン）
 // - 本文クライアントJSは原則ゼロ（Expressive Code のコピーボタンのみ例外）
 import '../styles/global.css';
@@ -8,9 +8,49 @@ import { SITE_NAME } from '../config';
 interface Props {
   title: string;
   description: string;
+  // OGP の種別。トップ/一覧は 'website'、記事ページは 'article'。
+  type?: 'website' | 'article';
+  // 記事の公開日（OGP article:published_time 用・任意）。
+  publishedAt?: string;
 }
-const { title, description } = Astro.props;
+const { title, description, type = 'website', publishedAt } = Astro.props;
 const year = new Date().getFullYear();
+// ドキュメントタイトルはサイト名でブランディングする（ブラウザタブ・検索結果）。
+// トップ（title === SITE_NAME）は二重化を避けてサイト名のみ。記事/404 等は
+// 「ページ名 — サイト名」に統一する。OGP の og:title は素のタイトルを保つ
+// （リンクプレビューにサイト名を重ねないため）ので分離して扱う。
+const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} — ${SITE_NAME}`;
+// 正規 URL は公開ドメイン確定後（astro.config の site 設定後）にのみ絶対化する。
+// site 未設定の現状では canonical / og:url を出さず、誤った相対URLの露出を避ける。
+const canonical = Astro.site
+  ? new URL(Astro.url.pathname, Astro.site).href
+  : undefined;
+
+// 構造化データ（JSON-LD）。検索エンジンにページ種別を伝える。
+// これは「実行される JS」ではなく <script type="application/ld+json"> 内の
+// 静的データ（UA は解釈せず読み取るだけ）なので zero-JS 方針に反しない。
+// url / mainEntityOfPage は絶対URL必須のため canonical と同様 site 設定時のみ付与。
+const jsonLd =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: title,
+        description,
+        inLanguage: 'ja-JP',
+        ...(publishedAt ? { datePublished: publishedAt } : {}),
+        author: { '@type': 'Person', name: SITE_NAME },
+        publisher: { '@type': 'Organization', name: SITE_NAME },
+        ...(canonical ? { url: canonical, mainEntityOfPage: canonical } : {}),
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: SITE_NAME,
+        description,
+        inLanguage: 'ja-JP',
+        ...(canonical ? { url: canonical } : {}),
+      };
 ---
 
 <!doctype html>
@@ -20,28 +60,76 @@ const year = new Date().getFullYear();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>{title}</title>
+    {/* モバイルのブラウザ UI を背景色に合わせる（light/dark で --bg を反映・zero-JS）。
+        値は global.css の --bg と同期させること（meta は CSS 変数を読めないため）。 */}
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#fcfcfb"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#0e1116"
+    />
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+
+    {/* OGP（Slack/Discord/Facebook 等のリンクプレビュー用・zero-JS） */}
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="ja_JP" />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {type === 'article' && publishedAt && (
+      <meta property="article:published_time" content={publishedAt} />
+    )}
+
+    {/* Twitter Card（画像は未設定のため summary。ドメイン確定後に画像対応） */}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    {/* 構造化データ（JSON-LD・静的データ／実行JSではない＝zero-JS維持） */}
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body class="bg-bg text-fg antialiased">
+    {/* スキップリンク（a11y）: 通常は視覚的に隠し、キーボードフォーカス時のみ表示。
+        繰り返しのヘッダーを飛ばして本文へ直接移動できる（zero-JS）。 */}
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:border focus:border-border focus:bg-bg focus:px-4 focus:py-2 focus:text-sm focus:text-accent"
+    >
+      本文へスキップ
+    </a>
     <header class="border-b border-border">
       <div class="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
         <a
           href="/"
-          class="font-bold tracking-tight text-fg no-underline hover:text-accent"
+          class="font-bold tracking-tight text-fg no-underline transition-colors hover:text-accent"
         >
           {SITE_NAME}
         </a>
       </div>
     </header>
 
-    <main class="mx-auto max-w-2xl px-5 py-10">
+    <main id="main" class="mx-auto max-w-2xl px-5 py-10">
       <slot />
     </main>
 
     <footer class="border-t border-border">
-      <div class="mx-auto max-w-2xl px-5 py-6 text-sm text-muted">
-        © {year} {SITE_NAME}
+      <div
+        class="mx-auto flex max-w-2xl items-center justify-between gap-4 px-5 py-6 text-sm text-muted"
+      >
+        <span>© {year} {SITE_NAME}</span>
+        <a
+          href="/"
+          class="text-muted no-underline transition-colors hover:text-accent"
+        >
+          トップへ
+        </a>
       </div>
     </footer>
   </body>

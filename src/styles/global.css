@@ -4,6 +4,9 @@
 /* セマンティックなデザイントークン（ライト/ダークで値だけ差し替え）。
    prefers-color-scheme に追従するので zero-JS のまま自動切替になる。 */
 :root {
+  /* UA にライト/ダーク両対応を宣言。ネイティブUI（スクロールバー・フォーム部品）と
+     CSS 適用前の初期描画をダーク時にも背景へ追従させ、白フラッシュを防ぐ（zero-JS）。 */
+  color-scheme: light dark;
   --bg: #fcfcfb;
   --fg: #1f2328;
   --muted: #6b7280;
@@ -35,7 +38,109 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* アンカー移動（目次の #slug・スキップリンクの #main）の着地体験。
+     scroll-padding-top で着地見出しの上に余白(24px=8pxグリッド)を確保し、
+     画面端に貼り付かないようにする。smooth は現在位置を見失わせないため。
+     ※ reduced-motion 時は下のブロックで auto に戻す（モーション過敏配慮）。 */
+  scroll-behavior: smooth;
+  scroll-padding-top: 1.5rem;
 }
 body {
   font-family: var(--font-sans);
+}
+
+/* 折り返しの品質（清潔リッチ・zero-JS・プログレッシブエンハンスメント）。
+   見出しは balance で「ぶら下がり1単語」を防ぎ行長を均等化、本文は pretty で
+   末尾のオーファン行を抑えてラグを整える。未対応ブラウザは無視（=従来挙動）。 */
+:where(h1, h2, h3, h4) {
+  text-wrap: balance;
+}
+:where(p, li) {
+  text-wrap: pretty;
+}
+
+/* 見出しアンカー「#」（zero-JS / 新規依存ゼロ）。astro.config の小さな rehype 関数が
+   本文 prose の h2–h4 末尾に <a class="heading-anchor" href="#id"> を足す。通常は
+   opacity:0 で隠し、見出し hover 時のみ淡く表示＝マウス利用者がセクション URL を取得
+   できる補助（キーボード/AT は目次(TOC)が deep-link を提供）。色変化はリンク方針に従う。*/
+.prose :where(h2, h3, h4) .heading-anchor {
+  margin-left: 0.35em;
+  color: var(--muted);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
+}
+.prose :where(h2, h3, h4):hover .heading-anchor,
+.heading-anchor:hover {
+  opacity: 1;
+}
+.heading-anchor:hover {
+  color: var(--accent);
+}
+
+/* テキスト選択をアクセントで色付け（light/dark 自動追従・zero-JS）。
+   color-mix で 18% の地色にして本文の可読性を損なわない。 */
+::selection {
+  background-color: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* キーボードフォーカスの可視化（a11y）。マウス操作では出さず（:focus-visible）、
+   キーボード時のみ accent のアウトラインを全インタラクティブ要素へ。 */
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* モーション過敏に配慮: transition を実質無効化（prefers-reduced-motion）。 */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  *,
+  ::before,
+  ::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 印刷 / PDF 保存の品質（zero-JS・技術記事を紙/PDF で読む読者向け）。
+   ナビゲーション類を省いて本文を主役にし、ダーク設定でも紙では light に固定する。 */
+@media print {
+  /* ページ内移動専用 UI は紙では無意味なので隠す（ヘッダー/フッター/目次/スキップリンク）。 */
+  header,
+  footer,
+  nav[aria-label="目次"],
+  a[href="#main"] {
+    display: none !important;
+  }
+  /* OS がダークでも紙は白地・黒字に固定（インク節約と可読性）。 */
+  :root {
+    color-scheme: light;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  /* 本文幅と余白の制約を外して紙面いっぱいに。 */
+  main {
+    max-width: none;
+    padding: 0;
+  }
+  /* 長い行やコードが紙端で切れないよう折り返す。 */
+  pre,
+  code {
+    white-space: pre-wrap !important;
+    word-wrap: break-word;
+  }
+  /* 本文中の外部リンクは URL を併記して紙でも参照先を辿れるようにする。 */
+  .prose a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #333;
+    word-break: break-all;
+  }
 }
