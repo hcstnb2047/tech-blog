@@ -33,9 +33,11 @@
 - コントラスト: 本文 fg/bg は WCAG AA を満たす（⑤で客観確認）。
 
 ## コンポーネント原則
-- **角丸**: Expressive Code は `borderRadius: 8px`。他要素も 8px 基調。
-- **リンク**: prose 内は `text-accent` / 下線なし → hover で下線（`prose-a:no-underline hover:prose-a:underline`）。
+- **角丸**: Expressive Code は `borderRadius: 8px`。他要素も 8px 基調（inline code は `rounded-md`）。
+- **リンク**: prose 内は `text-accent` / 太字化しない（`prose-a:font-normal`＝色で識別）/ 下線なし → hover で下線（`prose-a:no-underline prose-a:underline-offset-2 hover:prose-a:underline`）。
 - **コードブロック**: Expressive Code を主役級に（github-light/dark・行ハイライト・コピー）。
+- **インラインコード**: `prose-code:before/after:content-none` でバッククォート除去。`:not(pre)>code` のみを対象に淡い地色（`bg-fg/[0.06]`＝ライト/ダーク自動追従）＋ `px-1.5 py-0.5`＋`rounded-md`＋`text-[0.9em]`＋太字化しない（`font-normal`）。`:not(pre)>code` で限定し Expressive Code のブロックには干渉させない。
+- **本文見出しの縦リズム**: prose 既定の見出し余白は 8px グリッドに整合（h2 上48/下24px、h3 上32/下12px）ため上書きしない。記事 h1→`time`→本文は `mb-2`(8)→`mb-10`(40) でスケール内。
 - **密度**: 一覧は `py-5→py-6` のゆったりリズム。影は使わず罫線(`border-border`)で区切る。
 - **記事一覧の行**: タイトル(h2 / text-lg / font-semibold)＋ `description` 1行(text-sm / `--muted` / `mt-1`)＋日付(time / text-xs / `--muted` / `mt-2`)。行は `group relative`、タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。hover で `group-hover:text-accent`＝リンク affordance。
 

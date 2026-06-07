@@ -26,7 +26,7 @@ const { Content } = await render(article);
     >
 
     <div
-      class="prose prose-neutral max-w-none dark:prose-invert prose-headings:tracking-tight prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-code:before:content-none prose-code:after:content-none"
+      class="prose prose-neutral max-w-none dark:prose-invert prose-headings:tracking-tight prose-a:text-accent prose-a:font-normal prose-a:no-underline prose-a:underline-offset-2 hover:prose-a:underline prose-code:font-normal prose-code:before:content-none prose-code:after:content-none [&_:not(pre)>code]:rounded-md [&_:not(pre)>code]:bg-fg/[0.06] [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:text-[0.9em] [&_:not(pre)>code]:text-fg"
     >
       <Content />
     </div>
