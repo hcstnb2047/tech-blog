@@ -27,7 +27,7 @@ const articles = (await getCollection('articles')).sort(
             {/* stretched-link: カード全体を 1 タップ可能に（リンク文言はタイトルのみ＝a11y維持） */}
             <h2 class="text-lg font-semibold tracking-tight">
               <a
-                class="text-fg no-underline after:absolute after:inset-0 group-hover:text-accent"
+                class="text-fg no-underline transition-colors after:absolute after:inset-0 group-hover:text-accent group-focus-within:text-accent"
                 href={`/articles/${article.id}/`}
               >
                 {article.data.title}

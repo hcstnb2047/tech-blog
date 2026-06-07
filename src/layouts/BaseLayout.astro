@@ -28,7 +28,7 @@ const year = new Date().getFullYear();
       <div class="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
         <a
           href="/"
-          class="font-bold tracking-tight text-fg no-underline hover:text-accent"
+          class="font-bold tracking-tight text-fg no-underline transition-colors hover:text-accent"
         >
           {SITE_NAME}
         </a>
@@ -40,8 +40,16 @@ const year = new Date().getFullYear();
     </main>
 
     <footer class="border-t border-border">
-      <div class="mx-auto max-w-2xl px-5 py-6 text-sm text-muted">
-        © {year} {SITE_NAME}
+      <div
+        class="mx-auto flex max-w-2xl items-center justify-between gap-4 px-5 py-6 text-sm text-muted"
+      >
+        <span>© {year} {SITE_NAME}</span>
+        <a
+          href="/"
+          class="text-muted no-underline transition-colors hover:text-accent"
+        >
+          トップへ
+        </a>
       </div>
     </footer>
   </body>

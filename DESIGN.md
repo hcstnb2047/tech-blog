@@ -30,7 +30,11 @@
 | `--accent` | `#2f5bd0` | `#6ea0ff` | リンク/強調 |
 | `--border` | `#e6e7e3` | `#262c36` | 罫線 |
 - `@theme` で `bg-bg/text-fg/text-muted/text-accent/border-border` として公開（dark 自動追従）。
-- コントラスト: 本文 fg/bg は WCAG AA を満たす（⑤で客観確認）。
+- **アクセント運用**: accent はリンク/フォーカス/選択ハイライトに限定（多用しない＝清潔リッチ）。影は使わず罫線(`--border`)で面を分ける方針を維持（light/dark とも陰影レス）。
+- **テキスト選択**: `::selection` を `color-mix(in srgb, var(--accent) 18%, transparent)` で淡く色付け（light/dark 自動追従・本文の可読性を保つ薄さ）。
+- **フォーカス可視化(a11y)**: `:where(a,button,[tabindex]):focus-visible` に `outline: 2px var(--accent)` + `outline-offset:2px`。マウス時は出さず（`:focus-visible`）キーボード操作時のみ表示。一覧カードは `group-focus-within:text-accent` で hover と同じ affordance をキーボードにも付与。
+- **トランジション**: リンクの色変化に `transition-colors`。`prefers-reduced-motion: reduce` で `transition-duration` を実質無効化（モーション過敏配慮）。
+- **コントラスト(WCAG AA 客観確認 / 相対輝度で算出)**: light = muted/bg ≈ 4.76、accent/bg ≈ 5.86。dark = muted/bg ≈ 7.50、accent/bg ≈ 7.33。fg/bg は両モードとも十分高い。いずれも本文(4.5)基準を満たす（text-xs の日付も normal 扱いで満たす）。→ トークン値の変更は不要と判断。
 
 ## コンポーネント原則
 - **角丸**: Expressive Code は `borderRadius: 8px`。他要素も 8px 基調（inline code は `rounded-md`）。
@@ -40,6 +44,10 @@
 - **本文見出しの縦リズム**: prose 既定の見出し余白は 8px グリッドに整合（h2 上48/下24px、h3 上32/下12px）ため上書きしない。記事 h1→`time`→本文は `mb-2`(8)→`mb-10`(40) でスケール内。
 - **密度**: 一覧は `py-5→py-6` のゆったりリズム。影は使わず罫線(`border-border`)で区切る。
 - **記事一覧の行**: タイトル(h2 / text-lg / font-semibold)＋ `description` 1行(text-sm / `--muted` / `mt-1`)＋日付(time / text-xs / `--muted` / `mt-2`)。行は `group relative`、タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。hover で `group-hover:text-accent`＝リンク affordance。
+
+## ヘッダー / フッター体裁
+- **ヘッダー**: サイト名（`font-bold tracking-tight`）はトップへのリンク。`transition-colors` + `hover:text-accent`。`max-w-2xl px-5 py-4` で本文幅に揃える。
+- **フッター**: `flex justify-between` で「© year サイト名」（左）と「トップへ」リンク（右）を配置。全体 `text-sm text-muted`、リンクは `hover:text-accent`。zero-JS のページ内移動補助（`href="/"`）。
 
 ## デザイン参照（反復間で再利用）
 | URL | 要点 | 適用箇所 |
