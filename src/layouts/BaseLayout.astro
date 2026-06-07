@@ -25,6 +25,32 @@ const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} — ${SITE_NAME}`;
 const canonical = Astro.site
   ? new URL(Astro.url.pathname, Astro.site).href
   : undefined;
+
+// 構造化データ（JSON-LD）。検索エンジンにページ種別を伝える。
+// これは「実行される JS」ではなく <script type="application/ld+json"> 内の
+// 静的データ（UA は解釈せず読み取るだけ）なので zero-JS 方針に反しない。
+// url / mainEntityOfPage は絶対URL必須のため canonical と同様 site 設定時のみ付与。
+const jsonLd =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: title,
+        description,
+        inLanguage: 'ja-JP',
+        ...(publishedAt ? { datePublished: publishedAt } : {}),
+        author: { '@type': 'Person', name: SITE_NAME },
+        publisher: { '@type': 'Organization', name: SITE_NAME },
+        ...(canonical ? { url: canonical, mainEntityOfPage: canonical } : {}),
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: SITE_NAME,
+        description,
+        inLanguage: 'ja-JP',
+        ...(canonical ? { url: canonical } : {}),
+      };
 ---
 
 <!doctype html>
@@ -65,6 +91,9 @@ const canonical = Astro.site
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+
+    {/* 構造化データ（JSON-LD・静的データ／実行JSではない＝zero-JS維持） */}
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body class="bg-bg text-fg antialiased">
     {/* スキップリンク（a11y）: 通常は視覚的に隠し、キーボードフォーカス時のみ表示。

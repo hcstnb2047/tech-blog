@@ -30,6 +30,7 @@
 | `--accent` | `#2f5bd0` | `#6ea0ff` | リンク/強調 |
 | `--border` | `#e6e7e3` | `#262c36` | 罫線 |
 - `@theme` で `bg-bg/text-fg/text-muted/text-accent/border-border` として公開（dark 自動追従）。
+- **`color-scheme`**: `:root` に `color-scheme: light dark` を宣言。UA にライト/ダーク両対応を伝え、ネイティブUI（スクロールバー/フォーム部品）と CSS 適用前の初期描画もダーク時に背景へ追従させる（ダーク時の白フラッシュ防止・zero-JS）。`prefers-color-scheme` のトークン差し替えと併用。
 - **アクセント運用**: accent はリンク/フォーカス/選択ハイライトに限定（多用しない＝清潔リッチ）。影は使わず罫線(`--border`)で面を分ける方針を維持（light/dark とも陰影レス）。
 - **テキスト選択**: `::selection` を `color-mix(in srgb, var(--accent) 18%, transparent)` で淡く色付け（light/dark 自動追従・本文の可読性を保つ薄さ）。
 - **フォーカス可視化(a11y)**: `:where(a,button,[tabindex]):focus-visible` に `outline: 2px var(--accent)` + `outline-offset:2px`。マウス時は出さず（`:focus-visible`）キーボード操作時のみ表示。一覧カードは `group-focus-within:text-accent` で hover と同じ affordance をキーボードにも付与。
@@ -52,6 +53,7 @@
 - **常時出力**: `og:type`（既定 `website`／記事は `article`）・`og:title`・`og:description`・`og:site_name`・`og:locale=ja_JP`・`twitter:card=summary`・`twitter:title`・`twitter:description`。
 - **絶対URL依存タグは条件付き**: `canonical` / `og:url` は **`astro.config` の `site` 設定後のみ**出力（`new URL(Astro.url.pathname, Astro.site)`）。ドメイン未確定の現状では誤った相対URLを露出させないため出さない＝`site` を設定すれば自動で有効化される。
 - **画像**: OGP/Twitter 画像は絶対URL必須のためドメイン確定まで保留（`twitter:card` は `summary`）。確定後に `og:image` と `summary_large_image` を検討。
+- **構造化データ（JSON-LD）**: 検索エンジンにページ種別を伝えるため `<script type="application/ld+json">` を `<head>` に出力する。これは UA が**実行しない静的データ**（解釈して読むだけ）なので zero-JS 方針に反しない。トップ/一覧は `WebSite`（`name`/`description`/`inLanguage=ja-JP`）、記事は `BlogPosting`（`headline`/`description`/`inLanguage`/`datePublished`/`author`/`publisher`）。**`url`/`mainEntityOfPage` は絶対URL必須のため `canonical` と同様に `astro.config` の `site` 設定時のみ付与**（未設定なら省略＝誤URLを出さない）。整形は `BaseLayout` で一元化。
 - **記事ページ**: `type="article"` ＋ `article:published_time`（`publishedAt`）を付与。`BaseLayout` の Props は `type?: 'website'|'article'` / `publishedAt?: string`（任意）。
 
 ## 読了時間 / 404
