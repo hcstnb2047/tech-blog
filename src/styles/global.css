@@ -49,6 +49,16 @@ body {
   font-family: var(--font-sans);
 }
 
+/* 折り返しの品質（清潔リッチ・zero-JS・プログレッシブエンハンスメント）。
+   見出しは balance で「ぶら下がり1単語」を防ぎ行長を均等化、本文は pretty で
+   末尾のオーファン行を抑えてラグを整える。未対応ブラウザは無視（=従来挙動）。 */
+:where(h1, h2, h3, h4) {
+  text-wrap: balance;
+}
+:where(p, li) {
+  text-wrap: pretty;
+}
+
 /* テキスト選択をアクセントで色付け（light/dark 自動追従・zero-JS）。
    color-mix で 18% の地色にして本文の可読性を損なわない。 */
 ::selection {
@@ -72,5 +82,43 @@ body {
   ::before,
   ::after {
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* 印刷 / PDF 保存の品質（zero-JS・技術記事を紙/PDF で読む読者向け）。
+   ナビゲーション類を省いて本文を主役にし、ダーク設定でも紙では light に固定する。 */
+@media print {
+  /* ページ内移動専用 UI は紙では無意味なので隠す（ヘッダー/フッター/目次/スキップリンク）。 */
+  header,
+  footer,
+  nav[aria-label="目次"],
+  a[href="#main"] {
+    display: none !important;
+  }
+  /* OS がダークでも紙は白地・黒字に固定（インク節約と可読性）。 */
+  :root {
+    color-scheme: light;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  /* 本文幅と余白の制約を外して紙面いっぱいに。 */
+  main {
+    max-width: none;
+    padding: 0;
+  }
+  /* 長い行やコードが紙端で切れないよう折り返す。 */
+  pre,
+  code {
+    white-space: pre-wrap !important;
+    word-wrap: break-word;
+  }
+  /* 本文中の外部リンクは URL を併記して紙でも参照先を辿れるようにする。 */
+  .prose a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #333;
+    word-break: break-all;
   }
 }
