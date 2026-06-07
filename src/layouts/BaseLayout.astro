@@ -15,6 +15,11 @@ interface Props {
 }
 const { title, description, type = 'website', publishedAt } = Astro.props;
 const year = new Date().getFullYear();
+// ドキュメントタイトルはサイト名でブランディングする（ブラウザタブ・検索結果）。
+// トップ（title === SITE_NAME）は二重化を避けてサイト名のみ。記事/404 等は
+// 「ページ名 — サイト名」に統一する。OGP の og:title は素のタイトルを保つ
+// （リンクプレビューにサイト名を重ねないため）ので分離して扱う。
+const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} — ${SITE_NAME}`;
 // 正規 URL は公開ドメイン確定後（astro.config の site 設定後）にのみ絶対化する。
 // site 未設定の現状では canonical / og:url を出さず、誤った相対URLの露出を避ける。
 const canonical = Astro.site
@@ -29,7 +34,19 @@ const canonical = Astro.site
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>{title}</title>
+    {/* モバイルのブラウザ UI を背景色に合わせる（light/dark で --bg を反映・zero-JS）。
+        値は global.css の --bg と同期させること（meta は CSS 変数を読めないため）。 */}
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#fcfcfb"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#0e1116"
+    />
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
     {canonical && <link rel="canonical" href={canonical} />}
 

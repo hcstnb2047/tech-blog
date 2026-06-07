@@ -47,6 +47,8 @@
 
 ## SEO / 共有メタ（OGP・Twitter Card）
 - **方針**: リンクプレビュー（Slack/Discord/Facebook/X 等）を zero-JS で成立させる。`BaseLayout` の `<head>` に静的 `<meta>` のみで構成（クライアントJSなし・新規依存なし）。
+- **ドキュメントタイトルのブランディング**: ブラウザタブ/検索結果向けに `<title>` をサイト名でブランディングする。整形は `BaseLayout` で一元化（`title === SITE_NAME ? SITE_NAME : `${title} — ${SITE_NAME}``）。トップは二重化回避でサイト名のみ、記事/404 等は「ページ名 — サイト名」。**`og:title`/`twitter:title` は素の `title`** を保つ（リンクプレビューにサイト名を重ねない＝ドキュメントタイトルと分離）。各ページは素のページ名を `title` に渡すだけでよい（404 もブランディング付与は層に委譲）。
+- **theme-color（モバイルブラウザ UI の質感）**: `<meta name="theme-color" media="(prefers-color-scheme: …)">` を light/dark の 2 本出し、モバイルのアドレスバー等を `--bg`（light `#fcfcfb`／dark `#0e1116`）に同色化する（zero-JS・新規依存なし）。**値は `global.css` の `--bg` と手動同期**（meta は CSS 変数を読めないため。トークン変更時は両方更新）。
 - **常時出力**: `og:type`（既定 `website`／記事は `article`）・`og:title`・`og:description`・`og:site_name`・`og:locale=ja_JP`・`twitter:card=summary`・`twitter:title`・`twitter:description`。
 - **絶対URL依存タグは条件付き**: `canonical` / `og:url` は **`astro.config` の `site` 設定後のみ**出力（`new URL(Astro.url.pathname, Astro.site)`）。ドメイン未確定の現状では誤った相対URLを露出させないため出さない＝`site` を設定すれば自動で有効化される。
 - **画像**: OGP/Twitter 画像は絶対URL必須のためドメイン確定まで保留（`twitter:card` は `summary`）。確定後に `og:image` と `summary_large_image` を検討。

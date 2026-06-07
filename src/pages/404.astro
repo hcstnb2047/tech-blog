@@ -1,12 +1,12 @@
 ---
 // 404 ページ（静的ビルドで 404.html を生成。Vercel が未知URLに配信する）。
 // BaseLayout 準拠・既存トークンのみ・zero-JS。
+// タイトルのブランディング（「— サイト名」付与）は BaseLayout が一元化する。
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE_NAME } from '../config';
 ---
 
 <BaseLayout
-  title={`ページが見つかりません — ${SITE_NAME}`}
+  title="ページが見つかりません"
   description="お探しのページは見つかりませんでした。"
 >
   <section class="py-10">
