@@ -46,6 +46,12 @@
 - **密度**: 一覧は `py-5→py-6` のゆったりリズム。影は使わず罫線(`border-border`)で区切る。
 - **記事一覧の行**: タイトル(h2 / text-lg / font-semibold)＋ `description` 1行(text-sm / `--muted` / `mt-1`)＋日付(time / text-xs / `--muted` / `mt-2`)。行は `group relative`、タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。hover で `group-hover:text-accent`＝リンク affordance。
 
+## 目次（記事内 TOC）
+- **方針**: 技術記事のセクション間移動と deep-link を zero-JS で提供する。Astro が Markdown 見出しに自動採番する `id`（github-slugger）と `render()` の `headings` をそのまま使い、**rehype 等の新規依存は入れない**。
+- **対象**: セクション見出し（`depth === 2` の H2）のみ。`toc.length >= 2` の記事だけ表示（短い記事ではノイズになるため）。
+- **配置/体裁**: 記事メタ（日付・読了時間）の直後・本文 prose の前。`rounded-md border border-border px-5 py-4` の囲みに、ラベル「目次」と `<ol>`（`text-sm` / `--muted` / `hover:text-accent` + `hover:underline`）。
+- **a11y**: `<nav aria-label="目次">` のランドマークで命名。**見出しアウトラインを汚さないようラベルは `<p>`**（`<h2>` にしない）＝記事の見出し階層は h1→本文 h2 のまま。リンク先は Astro 自動 `id`（`#slug`）。
+
 ## SEO / 共有メタ（OGP・Twitter Card）
 - **方針**: リンクプレビュー（Slack/Discord/Facebook/X 等）を zero-JS で成立させる。`BaseLayout` の `<head>` に静的 `<meta>` のみで構成（クライアントJSなし・新規依存なし）。
 - **ドキュメントタイトルのブランディング**: ブラウザタブ/検索結果向けに `<title>` をサイト名でブランディングする。整形は `BaseLayout` で一元化（`title === SITE_NAME ? SITE_NAME : `${title} — ${SITE_NAME}``）。トップは二重化回避でサイト名のみ、記事/404 等は「ページ名 — サイト名」。**`og:title`/`twitter:title` は素の `title`** を保つ（リンクプレビューにサイト名を重ねない＝ドキュメントタイトルと分離）。各ページは素のページ名を `title` に渡すだけでよい（404 もブランディング付与は層に委譲）。
