@@ -2,6 +2,7 @@
 // 記事一覧トップ。各記事へ 1 タップで遷移できる最小リスト。
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_NAME, SITE_DESCRIPTION } from '../config';
 
 const articles = (await getCollection('articles')).sort(
   (a, b) =>
@@ -10,13 +11,13 @@ const articles = (await getCollection('articles')).sort(
 );
 ---
 
-<BaseLayout title="技術ブログ" description="公開技術ブログ">
-  <h1>技術ブログ</h1>
+<BaseLayout title={SITE_NAME} description={SITE_DESCRIPTION}>
+  <h1>{SITE_NAME}</h1>
   {
     articles.length === 0 ? (
       <p>記事はまだありません。</p>
     ) : (
-      <ul>
+      <ul class="post-list">
         {articles.map((article) => (
           <li>
             <a href={`/articles/${article.id}/`}>{article.data.title}</a>
