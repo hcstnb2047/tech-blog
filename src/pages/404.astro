@@ -1,0 +1,26 @@
+---
+// 404 ページ（静的ビルドで 404.html を生成。Vercel が未知URLに配信する）。
+// BaseLayout 準拠・既存トークンのみ・zero-JS。
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_NAME } from '../config';
+---
+
+<BaseLayout
+  title={`ページが見つかりません — ${SITE_NAME}`}
+  description="お探しのページは見つかりませんでした。"
+>
+  <section class="py-10">
+    <p class="text-sm font-semibold tracking-tight text-accent">404</p>
+    <h1 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+      ページが見つかりません
+    </h1>
+    <p class="mt-4 text-muted">
+      お探しのページは削除されたか、URL が変更された可能性があります。
+    </p>
+    <a
+      href="/"
+      class="mt-8 inline-block text-accent no-underline underline-offset-2 transition-colors hover:underline"
+      >← 記事一覧へ戻る</a
+    >
+  </section>
+</BaseLayout>

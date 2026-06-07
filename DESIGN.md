@@ -52,6 +52,11 @@
 - **画像**: OGP/Twitter 画像は絶対URL必須のためドメイン確定まで保留（`twitter:card` は `summary`）。確定後に `og:image` と `summary_large_image` を検討。
 - **記事ページ**: `type="article"` ＋ `article:published_time`（`publishedAt`）を付与。`BaseLayout` の Props は `type?: 'website'|'article'` / `publishedAt?: string`（任意）。
 
+## 読了時間 / 404
+
+- **読了時間（メタ）**: 一覧・記事ページの日付の隣に「約N分」を併記し、記事の分量を読む前に伝える（一覧の「読みたくなる形」を強化）。算出は `src/utils/readingTime.ts` の `readingTimeMin()`（ビルド時・新規依存なし）。日本語主体のため語数でなく**文字数ベース（500字/分）**で概算し、コードブロック/インラインコード/リンク記法は散文でないため除外して数える。区切りは中黒（`·`・`aria-hidden`）で日付と並置（一覧 text-xs / 記事 text-sm・ともに `--muted`）。
+- **404 ページ**: `src/pages/404.astro`（静的ビルドで `404.html` を生成）。`BaseLayout` 準拠・既存トークンのみ・zero-JS。`text-accent` の「404」ラベル＋h1＋説明＋「← 記事一覧へ戻る」リンク（`href="/"`）。ヘッダー/フッターの戻り導線も共通レイアウト経由でそのまま機能する。
+
 ## a11y / 細部の体裁
 - **スキップリンク**: `<body>` 先頭に「本文へスキップ」（`href="#main"`）。通常は `sr-only` で視覚的に隠し、キーボードフォーカス時のみ `focus:not-sr-only` で左上に表示（`bg-bg`＋`border-border`＋`text-accent`）。`<main id="main">` を着地点に。繰り返すヘッダーをスキップして本文へ直接移動できる（zero-JS・新規依存なし）。
 - **日付表記**: `publishedAt`（`YYYY-MM-DD`）は日本語表記（例: `2026年6月7日`）で表示する。整形は `src/utils/date.ts` の `formatDateJa()`（ビルド時・`new Date()` を介さず文字列分解で TZ ズレを回避）。機械可読性のため `<time datetime>` には ISO 値（`YYYY-MM-DD`）を保持。一覧・記事ページとも同じ整形を使う。

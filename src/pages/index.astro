@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE_NAME, SITE_DESCRIPTION } from '../config';
 import { formatDateJa } from '../utils/date';
+import { readingTimeMin } from '../utils/readingTime';
 
 const articles = (await getCollection('articles')).sort(
   (a, b) =>
@@ -37,12 +38,13 @@ const articles = (await getCollection('articles')).sort(
             <p class="mt-1 text-sm leading-relaxed text-muted">
               {article.data.description}
             </p>
-            <time
-              class="mt-2 block text-xs text-muted"
-              datetime={article.data.publishedAt}
-            >
-              {formatDateJa(article.data.publishedAt)}
-            </time>
+            <p class="mt-2 flex items-center gap-2 text-xs text-muted">
+              <time datetime={article.data.publishedAt}>
+                {formatDateJa(article.data.publishedAt)}
+              </time>
+              <span aria-hidden="true">·</span>
+              <span>約{readingTimeMin(article.body)}分</span>
+            </p>
           </li>
         ))}
       </ul>
