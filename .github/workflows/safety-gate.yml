@@ -25,6 +25,8 @@ jobs:
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
+          # gitleaks-action@v2 は pull_request スキャンに GITHUB_TOKEN が必須（無いとPRで素通り/失敗する）。
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # リポジトリ直下の .gitleaks.toml（デフォルトルール + カスタム PII/健康 denylist）を使う。
           GITLEAKS_CONFIG: .gitleaks.toml
           # 検出時に必ず失敗させる（公開を止める安全弁）。
