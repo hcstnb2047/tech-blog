@@ -52,6 +52,10 @@
 - **画像**: OGP/Twitter 画像は絶対URL必須のためドメイン確定まで保留（`twitter:card` は `summary`）。確定後に `og:image` と `summary_large_image` を検討。
 - **記事ページ**: `type="article"` ＋ `article:published_time`（`publishedAt`）を付与。`BaseLayout` の Props は `type?: 'website'|'article'` / `publishedAt?: string`（任意）。
 
+## a11y / 細部の体裁
+- **スキップリンク**: `<body>` 先頭に「本文へスキップ」（`href="#main"`）。通常は `sr-only` で視覚的に隠し、キーボードフォーカス時のみ `focus:not-sr-only` で左上に表示（`bg-bg`＋`border-border`＋`text-accent`）。`<main id="main">` を着地点に。繰り返すヘッダーをスキップして本文へ直接移動できる（zero-JS・新規依存なし）。
+- **日付表記**: `publishedAt`（`YYYY-MM-DD`）は日本語表記（例: `2026年6月7日`）で表示する。整形は `src/utils/date.ts` の `formatDateJa()`（ビルド時・`new Date()` を介さず文字列分解で TZ ズレを回避）。機械可読性のため `<time datetime>` には ISO 値（`YYYY-MM-DD`）を保持。一覧・記事ページとも同じ整形を使う。
+
 ## ヘッダー / フッター体裁
 - **ヘッダー**: サイト名（`font-bold tracking-tight`）はトップへのリンク。`transition-colors` + `hover:text-accent`。`max-w-2xl px-5 py-4` で本文幅に揃える。
 - **フッター**: `flex justify-between` で「© year サイト名」（左）と「トップへ」リンク（右）を配置。全体 `text-sm text-muted`、リンクは `hover:text-accent`。zero-JS のページ内移動補助（`href="/"`）。

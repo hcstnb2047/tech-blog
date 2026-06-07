@@ -50,6 +50,14 @@ const canonical = Astro.site
     <meta name="twitter:description" content={description} />
   </head>
   <body class="bg-bg text-fg antialiased">
+    {/* スキップリンク（a11y）: 通常は視覚的に隠し、キーボードフォーカス時のみ表示。
+        繰り返しのヘッダーを飛ばして本文へ直接移動できる（zero-JS）。 */}
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:border focus:border-border focus:bg-bg focus:px-4 focus:py-2 focus:text-sm focus:text-accent"
+    >
+      本文へスキップ
+    </a>
     <header class="border-b border-border">
       <div class="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
         <a
@@ -61,7 +69,7 @@ const canonical = Astro.site
       </div>
     </header>
 
-    <main class="mx-auto max-w-2xl px-5 py-10">
+    <main id="main" class="mx-auto max-w-2xl px-5 py-10">
       <slot />
     </main>
 

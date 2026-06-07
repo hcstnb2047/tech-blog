@@ -2,6 +2,7 @@
 // 1 ページ 1 記事・独立 URL。Markdown 本文を prose でレンダリングする。
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDateJa } from '../../utils/date';
 
 export async function getStaticPaths() {
   const articles = await getCollection('articles');
@@ -33,7 +34,7 @@ const { Content } = await render(article);
     </h1>
     <time
       class="mb-10 block text-sm text-muted"
-      datetime={article.data.publishedAt}>{article.data.publishedAt}</time
+      datetime={article.data.publishedAt}>{formatDateJa(article.data.publishedAt)}</time
     >
 
     <div

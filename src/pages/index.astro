@@ -3,6 +3,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE_NAME, SITE_DESCRIPTION } from '../config';
+import { formatDateJa } from '../utils/date';
 
 const articles = (await getCollection('articles')).sort(
   (a, b) =>
@@ -40,7 +41,7 @@ const articles = (await getCollection('articles')).sort(
               class="mt-2 block text-xs text-muted"
               datetime={article.data.publishedAt}
             >
-              {article.data.publishedAt}
+              {formatDateJa(article.data.publishedAt)}
             </time>
           </li>
         ))}
