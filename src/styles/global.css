@@ -38,6 +38,12 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* アンカー移動（目次の #slug・スキップリンクの #main）の着地体験。
+     scroll-padding-top で着地見出しの上に余白(24px=8pxグリッド)を確保し、
+     画面端に貼り付かないようにする。smooth は現在位置を見失わせないため。
+     ※ reduced-motion 時は下のブロックで auto に戻す（モーション過敏配慮）。 */
+  scroll-behavior: smooth;
+  scroll-padding-top: 1.5rem;
 }
 body {
   font-family: var(--font-sans);
@@ -59,6 +65,9 @@ body {
 
 /* モーション過敏に配慮: transition を実質無効化（prefers-reduced-motion）。 */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
   *,
   ::before,
   ::after {

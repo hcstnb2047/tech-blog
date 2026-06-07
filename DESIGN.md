@@ -51,6 +51,7 @@
 - **対象**: セクション見出し（`depth === 2` の H2）のみ。`toc.length >= 2` の記事だけ表示（短い記事ではノイズになるため）。
 - **配置/体裁**: 記事メタ（日付・読了時間）の直後・本文 prose の前。`rounded-md border border-border px-5 py-4` の囲みに、ラベル「目次」と `<ol>`（`text-sm` / `--muted` / `hover:text-accent` + `hover:underline`）。
 - **a11y**: `<nav aria-label="目次">` のランドマークで命名。**見出しアウトラインを汚さないようラベルは `<p>`**（`<h2>` にしない）＝記事の見出し階層は h1→本文 h2 のまま。リンク先は Astro 自動 `id`（`#slug`）。
+- **アンカー移動の着地体験（zero-JS）**: 目次の `#slug` ジャンプとスキップリンクの `#main` ジャンプ共通で、`:root`(html) に `scroll-padding-top: 1.5rem`（24px=8pxグリッド）を付け、着地見出しが画面端に貼り付かないよう上余白を確保する。`scroll-behavior: smooth` で移動量を可視化し現在位置を見失わせない。**`prefers-reduced-motion: reduce` 時は `scroll-behavior: auto !important` に戻す**（モーション過敏配慮・既存の transition 無効化ブロックと同居）。
 
 ## SEO / 共有メタ（OGP・Twitter Card）
 - **方針**: リンクプレビュー（Slack/Discord/Facebook/X 等）を zero-JS で成立させる。`BaseLayout` の `<head>` に静的 `<meta>` のみで構成（クライアントJSなし・新規依存なし）。
