@@ -1,5 +1,5 @@
 ---
-// 記事一覧トップ。各記事へ 1 タップで遷移できる最小リスト。
+// 記事一覧トップ。各記事へ 1 タップで遷移できるリスト。
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE_NAME, SITE_DESCRIPTION } from '../config';
@@ -12,16 +12,24 @@ const articles = (await getCollection('articles')).sort(
 ---
 
 <BaseLayout title={SITE_NAME} description={SITE_DESCRIPTION}>
-  <h1>{SITE_NAME}</h1>
+  <h1 class="mb-8 text-2xl font-bold tracking-tight">{SITE_NAME}</h1>
   {
     articles.length === 0 ? (
-      <p>記事はまだありません。</p>
+      <p class="text-muted">記事はまだありません。</p>
     ) : (
-      <ul class="post-list">
+      <ul class="divide-y divide-border">
         {articles.map((article) => (
-          <li>
-            <a href={`/articles/${article.id}/`}>{article.data.title}</a>
-            <time datetime={article.data.publishedAt}>
+          <li class="py-5">
+            <a
+              class="text-lg font-semibold tracking-tight text-fg no-underline hover:text-accent"
+              href={`/articles/${article.id}/`}
+            >
+              {article.data.title}
+            </a>
+            <time
+              class="mt-1 block text-xs text-muted"
+              datetime={article.data.publishedAt}
+            >
               {article.data.publishedAt}
             </time>
           </li>

@@ -1,15 +1,15 @@
 ---
-// 全ページ共通レイアウト。
+// 全ページ共通レイアウト（Tailwind v4）。
 // - SEO メタ（title / description）
-// - 清潔・可読重視のグローバルスタイル（is:global で Markdown 本文にも適用）
-// - クライアント JS は読み込まない（zero-JS）
+// - グローバルCSS（Tailwind + typography + デザイントークン）
+// - 本文クライアントJSは原則ゼロ（Expressive Code のコピーボタンのみ例外）
+import '../styles/global.css';
+import { SITE_NAME } from '../config';
 interface Props {
   title: string;
   description: string;
 }
-import { SITE_NAME } from '../config';
 const { title, description } = Astro.props;
-const siteName = SITE_NAME;
 const year = new Date().getFullYear();
 ---
 
@@ -22,172 +22,27 @@ const year = new Date().getFullYear();
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title}</title>
     <meta name="description" content={description} />
-
-    <style is:global>
-      :root {
-        color-scheme: light dark;
-        --measure: 44rem;
-
-        /* light */
-        --bg: #fcfcfb;
-        --bg-soft: #f4f5f3;
-        --text: #1f2328;
-        --muted: #6b7280;
-        --accent: #2f5bd0;
-        --border: #e6e7e3;
-        --code-bg: #f6f8fa;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #0e1116;
-          --bg-soft: #161b22;
-          --text: #e6edf3;
-          --muted: #9aa4b2;
-          --accent: #6ea0ff;
-          --border: #262c36;
-          --code-bg: #161b22;
-        }
-      }
-
-      * { box-sizing: border-box; }
-
-      html { -webkit-text-size-adjust: 100%; }
-
-      body {
-        font-family:
-          system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP",
-          "Segoe UI", Roboto, sans-serif;
-        font-size: 1.0625rem;
-        line-height: 1.75;
-        color: var(--text);
-        background: var(--bg);
-        margin: 0;
-        text-underline-offset: 0.18em;
-      }
-
-      /* ---- レイアウト ---- */
-      .site-header,
-      .site-footer {
-        max-width: var(--measure);
-        margin-inline: auto;
-        padding-inline: 1.25rem;
-      }
-      .site-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-block: 1.25rem;
-        border-bottom: 1px solid var(--border);
-      }
-      .site-title {
-        font-weight: 700;
-        font-size: 1.05rem;
-        letter-spacing: 0.01em;
-        text-decoration: none;
-        color: var(--text);
-      }
-      .site-title:hover { color: var(--accent); }
-
-      main {
-        max-width: var(--measure);
-        margin-inline: auto;
-        padding: 2.5rem 1.25rem 3rem;
-      }
-
-      .site-footer {
-        border-top: 1px solid var(--border);
-        padding-block: 1.5rem 2.5rem;
-        color: var(--muted);
-        font-size: 0.85rem;
-      }
-
-      /* ---- タイポグラフィ ---- */
-      h1, h2, h3 { line-height: 1.3; letter-spacing: -0.01em; }
-      h1 { font-size: 1.85rem; margin: 0 0 0.6rem; font-weight: 750; }
-      h2 {
-        font-size: 1.35rem;
-        margin: 2.6rem 0 0.9rem;
-        padding-top: 0.4rem;
-        font-weight: 700;
-      }
-      h3 { font-size: 1.1rem; margin: 2rem 0 0.6rem; font-weight: 700; }
-
-      p, ul, ol { margin: 0 0 1.1rem; }
-      ul, ol { padding-left: 1.4rem; }
-      li { margin: 0.3rem 0; }
-
-      a { color: var(--accent); text-decoration: underline; }
-      a:hover { text-decoration-thickness: 2px; }
-
-      strong { font-weight: 700; }
-
-      blockquote {
-        margin: 1.3rem 0;
-        padding: 0.2rem 0 0.2rem 1rem;
-        border-left: 3px solid var(--border);
-        color: var(--muted);
-      }
-
-      hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
-
-      /* ---- コード ---- */
-      code {
-        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-        font-size: 0.9em;
-      }
-      :not(pre) > code {
-        background: var(--code-bg);
-        padding: 0.15em 0.4em;
-        border-radius: 4px;
-        border: 1px solid var(--border);
-      }
-      pre {
-        overflow-x: auto;
-        padding: 1rem 1.15rem;
-        background: var(--code-bg) !important;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: 0.92rem;
-        line-height: 1.6;
-        margin: 1.3rem 0;
-      }
-      pre code { background: none; border: none; padding: 0; }
-
-      /* ---- 記事メタ ---- */
-      article > time {
-        display: block;
-        color: var(--muted);
-        font-size: 0.85rem;
-        margin-bottom: 2rem;
-      }
-      article > footer {
-        margin-top: 3rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--border);
-      }
-      article > footer h2 { font-size: 0.95rem; margin: 0 0 0.6rem; color: var(--muted); }
-      article > footer ul { padding-left: 1.2rem; font-size: 0.92rem; }
-
-      /* ---- 記事一覧 ---- */
-      .post-list { list-style: none; padding: 0; }
-      .post-list li {
-        margin: 0;
-        padding: 1.1rem 0;
-        border-bottom: 1px solid var(--border);
-      }
-      .post-list a { font-size: 1.1rem; font-weight: 650; text-decoration: none; }
-      .post-list a:hover { color: var(--accent); text-decoration: underline; }
-      .post-list time { display: block; color: var(--muted); font-size: 0.82rem; margin-top: 0.25rem; }
-    </style>
   </head>
-  <body>
-    <header class="site-header">
-      <a href="/" class="site-title">{siteName}</a>
+  <body class="bg-bg text-fg antialiased">
+    <header class="border-b border-border">
+      <div class="mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
+        <a
+          href="/"
+          class="font-bold tracking-tight text-fg no-underline hover:text-accent"
+        >
+          {SITE_NAME}
+        </a>
+      </div>
     </header>
-    <main>
+
+    <main class="mx-auto max-w-2xl px-5 py-10">
       <slot />
     </main>
-    <footer class="site-footer">© {year} {siteName}</footer>
+
+    <footer class="border-t border-border">
+      <div class="mx-auto max-w-2xl px-5 py-6 text-sm text-muted">
+        © {year} {SITE_NAME}
+      </div>
+    </footer>
   </body>
 </html>

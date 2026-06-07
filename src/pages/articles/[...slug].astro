@@ -1,5 +1,5 @@
 ---
-// 1 ページ 1 記事・独立 URL。Markdown 本文をレンダリングする。
+// 1 ページ 1 記事・独立 URL。Markdown 本文を prose でレンダリングする。
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
@@ -17,18 +17,32 @@ const { Content } = await render(article);
 
 <BaseLayout title={article.data.title} description={article.data.description}>
   <article>
-    <h1>{article.data.title}</h1>
-    <time datetime={article.data.publishedAt}>{article.data.publishedAt}</time>
+    <h1 class="mb-2 text-3xl font-bold leading-tight tracking-tight">
+      {article.data.title}
+    </h1>
+    <time
+      class="mb-10 block text-sm text-muted"
+      datetime={article.data.publishedAt}>{article.data.publishedAt}</time
+    >
 
-    <Content />
+    <div
+      class="prose prose-neutral max-w-none dark:prose-invert prose-headings:tracking-tight prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-code:before:content-none prose-code:after:content-none"
+    >
+      <Content />
+    </div>
 
-    <footer>
-      <h2>出典</h2>
-      <ul>
+    <footer class="mt-14 border-t border-border pt-6">
+      <h2 class="mb-3 text-sm font-semibold text-muted">出典</h2>
+      <ul class="list-disc space-y-1 pl-5 text-sm">
         {
           article.data.sources.map((source) => (
             <li>
-              <a href={source.url} rel="noopener noreferrer" target="_blank">
+              <a
+                class="text-accent hover:underline"
+                href={source.url}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
                 {source.title}
               </a>
             </li>
