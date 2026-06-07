@@ -12,6 +12,7 @@
 - **本文**: prose 既定（16px / 行間≈1.75）。左揃え。
 - **読み幅**: 本文の1行を **60–75ch** に収める（現行 `max-w-2xl`＝約70–75ch。prose の `max-w-none` 上書きはコンテナ幅で制御）。
 - **見出し**: h1 = text-3xl / font-bold / leading-tight / tracking-tight。見出しは `tracking-tight`。
+- **トップのヒーロー（サイト名）**: 例外的に主役級。`text-4xl`（sm:`text-5xl`）/ font-bold / tracking-tight。下に `--muted` のタグライン（`SITE_DESCRIPTION`）を `mt-3`(12px) で添え、`pb-8`(32px)＋`border-b` で本文と分離。記事ページの h1（text-3xl）とは役割が異なる。
 - **副次テキスト**: メタ情報・出典・footer は text-sm / text-muted。
 - フォント: `system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Segoe UI", Roboto, sans-serif`（global.css の `--font-sans` を昇格）。
 
@@ -36,6 +37,7 @@
 - **リンク**: prose 内は `text-accent` / 下線なし → hover で下線（`prose-a:no-underline hover:prose-a:underline`）。
 - **コードブロック**: Expressive Code を主役級に（github-light/dark・行ハイライト・コピー）。
 - **密度**: 一覧は `py-5→py-6` のゆったりリズム。影は使わず罫線(`border-border`)で区切る。
+- **記事一覧の行**: タイトル(h2 / text-lg / font-semibold)＋ `description` 1行(text-sm / `--muted` / `mt-1`)＋日付(time / text-xs / `--muted` / `mt-2`)。行は `group relative`、タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。hover で `group-hover:text-accent`＝リンク affordance。
 
 ## デザイン参照（反復間で再利用）
 | URL | 要点 | 適用箇所 |
