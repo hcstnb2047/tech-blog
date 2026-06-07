@@ -1,6 +1,6 @@
 ---
 // 全ページ共通レイアウト（Tailwind v4）。
-// - SEO メタ（title / description）
+// - SEO メタ（title / description / OGP / Twitter Card）
 // - グローバルCSS（Tailwind + typography + デザイントークン）
 // - 本文クライアントJSは原則ゼロ（Expressive Code のコピーボタンのみ例外）
 import '../styles/global.css';
@@ -8,9 +8,18 @@ import { SITE_NAME } from '../config';
 interface Props {
   title: string;
   description: string;
+  // OGP の種別。トップ/一覧は 'website'、記事ページは 'article'。
+  type?: 'website' | 'article';
+  // 記事の公開日（OGP article:published_time 用・任意）。
+  publishedAt?: string;
 }
-const { title, description } = Astro.props;
+const { title, description, type = 'website', publishedAt } = Astro.props;
 const year = new Date().getFullYear();
+// 正規 URL は公開ドメイン確定後（astro.config の site 設定後）にのみ絶対化する。
+// site 未設定の現状では canonical / og:url を出さず、誤った相対URLの露出を避ける。
+const canonical = Astro.site
+  ? new URL(Astro.url.pathname, Astro.site).href
+  : undefined;
 ---
 
 <!doctype html>
@@ -22,6 +31,23 @@ const year = new Date().getFullYear();
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+
+    {/* OGP（Slack/Discord/Facebook 等のリンクプレビュー用・zero-JS） */}
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="ja_JP" />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {type === 'article' && publishedAt && (
+      <meta property="article:published_time" content={publishedAt} />
+    )}
+
+    {/* Twitter Card（画像は未設定のため summary。ドメイン確定後に画像対応） */}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
   </head>
   <body class="bg-bg text-fg antialiased">
     <header class="border-b border-border">

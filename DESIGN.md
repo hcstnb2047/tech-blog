@@ -45,9 +45,17 @@
 - **密度**: 一覧は `py-5→py-6` のゆったりリズム。影は使わず罫線(`border-border`)で区切る。
 - **記事一覧の行**: タイトル(h2 / text-lg / font-semibold)＋ `description` 1行(text-sm / `--muted` / `mt-1`)＋日付(time / text-xs / `--muted` / `mt-2`)。行は `group relative`、タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。hover で `group-hover:text-accent`＝リンク affordance。
 
+## SEO / 共有メタ（OGP・Twitter Card）
+- **方針**: リンクプレビュー（Slack/Discord/Facebook/X 等）を zero-JS で成立させる。`BaseLayout` の `<head>` に静的 `<meta>` のみで構成（クライアントJSなし・新規依存なし）。
+- **常時出力**: `og:type`（既定 `website`／記事は `article`）・`og:title`・`og:description`・`og:site_name`・`og:locale=ja_JP`・`twitter:card=summary`・`twitter:title`・`twitter:description`。
+- **絶対URL依存タグは条件付き**: `canonical` / `og:url` は **`astro.config` の `site` 設定後のみ**出力（`new URL(Astro.url.pathname, Astro.site)`）。ドメイン未確定の現状では誤った相対URLを露出させないため出さない＝`site` を設定すれば自動で有効化される。
+- **画像**: OGP/Twitter 画像は絶対URL必須のためドメイン確定まで保留（`twitter:card` は `summary`）。確定後に `og:image` と `summary_large_image` を検討。
+- **記事ページ**: `type="article"` ＋ `article:published_time`（`publishedAt`）を付与。`BaseLayout` の Props は `type?: 'website'|'article'` / `publishedAt?: string`（任意）。
+
 ## ヘッダー / フッター体裁
 - **ヘッダー**: サイト名（`font-bold tracking-tight`）はトップへのリンク。`transition-colors` + `hover:text-accent`。`max-w-2xl px-5 py-4` で本文幅に揃える。
 - **フッター**: `flex justify-between` で「© year サイト名」（左）と「トップへ」リンク（右）を配置。全体 `text-sm text-muted`、リンクは `hover:text-accent`。zero-JS のページ内移動補助（`href="/"`）。
+- **記事内の戻り導線**: 記事ページ本文上部に「← 記事一覧へ」（`href="/"`・`text-sm text-muted` / `hover:text-accent` / `transition-colors`）を配置。ヘッダー/フッターに加え本文先頭にも戻り口を用意（読了直前でなくスクロール前に到達できる）。
 
 ## デザイン参照（反復間で再利用）
 | URL | 要点 | 適用箇所 |

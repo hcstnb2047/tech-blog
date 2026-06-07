@@ -15,8 +15,19 @@ const { article } = Astro.props;
 const { Content } = await render(article);
 ---
 
-<BaseLayout title={article.data.title} description={article.data.description}>
+<BaseLayout
+  title={article.data.title}
+  description={article.data.description}
+  type="article"
+  publishedAt={article.data.publishedAt}
+>
   <article>
+    {/* 記事内からの戻り導線（zero-JS・ヘッダー/フッターに加えて本文上にも） */}
+    <a
+      href="/"
+      class="mb-6 inline-block text-sm text-muted no-underline transition-colors hover:text-accent"
+      >← 記事一覧へ</a
+    >
     <h1 class="mb-2 text-3xl font-bold leading-tight tracking-tight">
       {article.data.title}
     </h1>
