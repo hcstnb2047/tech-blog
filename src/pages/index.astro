@@ -19,7 +19,7 @@ const articles = (await getCollection('articles')).sort(
     ) : (
       <ul class="divide-y divide-border">
         {articles.map((article) => (
-          <li class="py-5">
+          <li class="py-6">
             <a
               class="text-lg font-semibold tracking-tight text-fg no-underline hover:text-accent"
               href={`/articles/${article.id}/`}
