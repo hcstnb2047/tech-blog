@@ -35,7 +35,7 @@
 - **テキスト選択**: `::selection` を `color-mix(in srgb, var(--accent) 18%, transparent)` で淡く色付け（light/dark 自動追従・本文の可読性を保つ薄さ）。
 - **フォーカス可視化(a11y)**: `:where(a,button,[tabindex]):focus-visible` に `outline: 2px var(--accent)` + `outline-offset:2px`。マウス時は出さず（`:focus-visible`）キーボード操作時のみ表示。一覧カードは `group-focus-within:text-accent` で hover と同じ affordance をキーボードにも付与。
 - **トランジション**: リンクの色変化に `transition-colors`。`prefers-reduced-motion: reduce` で `transition-duration` を実質無効化（モーション過敏配慮）。
-- **コントラスト(WCAG AA 客観確認 / 相対輝度で算出)**: light = muted/bg ≈ 4.76、accent/bg ≈ 5.86。dark = muted/bg ≈ 7.50、accent/bg ≈ 7.33。fg/bg は両モードとも十分高い。いずれも本文(4.5)基準を満たす（text-xs の日付も normal 扱いで満たす）。→ トークン値の変更は不要と判断。
+- **コントラスト(WCAG AA 客観確認 / 相対輝度で算出)**: light = muted/bg ≈ 4.76、accent/bg ≈ 5.86。dark = muted/bg ≈ 7.50、accent/bg ≈ 7.33。fg/bg は両モードとも十分高い。いずれも本文(4.5)基準を満たす。→ トークン値の変更は不要と判断。
 
 ## コンポーネント原則
 - **角丸**: Expressive Code は `borderRadius: 8px`。他要素も 8px 基調（inline code は `rounded-md`）。
@@ -44,7 +44,7 @@
 - **インラインコード**: `prose-code:before/after:content-none` でバッククォート除去。`:not(pre)>code` のみを対象に淡い地色（`bg-fg/[0.06]`＝ライト/ダーク自動追従）＋ `px-1.5 py-0.5`＋`rounded-md`＋`text-[0.9em]`＋太字化しない（`font-normal`）。`:not(pre)>code` で限定し Expressive Code のブロックには干渉させない。
 - **本文見出しの縦リズム**: prose 既定の見出し余白は 8px グリッドに整合（h2 上48/下24px、h3 上32/下12px）ため上書きしない。記事 h1→`time`→本文は `mb-2`(8)→`mb-10`(40) でスケール内。
 - **密度**: 一覧は `py-5→py-6` のゆったりリズム。影は使わず罫線(`border-border`)で区切る。
-- **記事一覧の行**: タイトル(h2 / text-lg / font-semibold)＋ `description` 1行(text-sm / `--muted` / `mt-1`)＋日付(time / text-xs / `--muted` / `mt-2`)。行は `group relative`、タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。hover で `group-hover:text-accent`＝リンク affordance。
+- **記事一覧の行**: タイトル(h2 / text-lg / font-semibold)＋ `description` 1行(text-sm / `--muted` / `mt-1`)＋メタ(time・読了時間 / text-sm / `--muted` / `mt-2`)。行は `group relative -mx-4 px-4 rounded-lg`、タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。**rest は `text-fg` で清潔に保ち、hover/focus でリンク affordance を二重提示**: 行に淡い accent ティント(`group-hover:bg-accent/5`・陰影レスで罫線方針と両立)＋タイトルに `group-hover:text-accent group-hover:underline`(下線は prose リンク規約§「リンク」と統一・`underline-offset-4`)。キーボードは `group-focus-within:` で同等。メタの日付は副次テキスト規約に合わせ `text-sm`(旧 text-xs はやや小さく可読性で `text-sm` に統一)。
 
 ## 目次（記事内 TOC）
 - **方針**: 技術記事のセクション間移動と deep-link を zero-JS で提供する。Astro が Markdown 見出しに自動採番する `id`（github-slugger）と `render()` の `headings` をそのまま使い、**rehype 等の新規依存は入れない**。
@@ -66,7 +66,7 @@
 
 ## 読了時間 / 404
 
-- **読了時間（メタ）**: 一覧・記事ページの日付の隣に「約N分」を併記し、記事の分量を読む前に伝える（一覧の「読みたくなる形」を強化）。算出は `src/utils/readingTime.ts` の `readingTimeMin()`（ビルド時・新規依存なし）。日本語主体のため語数でなく**文字数ベース（500字/分）**で概算し、コードブロック/インラインコード/リンク記法は散文でないため除外して数える。区切りは中黒（`·`・`aria-hidden`）で日付と並置（一覧 text-xs / 記事 text-sm・ともに `--muted`）。
+- **読了時間（メタ）**: 一覧・記事ページの日付の隣に「約N分」を併記し、記事の分量を読む前に伝える（一覧の「読みたくなる形」を強化）。算出は `src/utils/readingTime.ts` の `readingTimeMin()`（ビルド時・新規依存なし）。日本語主体のため語数でなく**文字数ベース（500字/分）**で概算し、コードブロック/インラインコード/リンク記法は散文でないため除外して数える。区切りは中黒（`·`・`aria-hidden`）で日付と並置（一覧・記事とも text-sm・`--muted`）。
 - **404 ページ**: `src/pages/404.astro`（静的ビルドで `404.html` を生成）。`BaseLayout` 準拠・既存トークンのみ・zero-JS。`text-accent` の「404」ラベル＋h1＋説明＋「← 記事一覧へ戻る」リンク（`href="/"`）。ヘッダー/フッターの戻り導線も共通レイアウト経由でそのまま機能する。
 
 ## a11y / 細部の体裁
