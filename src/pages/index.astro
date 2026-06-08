@@ -25,11 +25,14 @@ const articles = (await getCollection('articles')).sort(
     ) : (
       <ul class="divide-y divide-border">
         {articles.map((article) => (
-          <li class="group relative py-6">
-            {/* stretched-link: カード全体を 1 タップ可能に（リンク文言はタイトルのみ＝a11y維持） */}
+          <li class="group relative -mx-4 rounded-lg px-4 py-6 transition-colors group-hover:bg-accent/5">
+            {/* stretched-link: カード全体を 1 タップ可能に（リンク文言はタイトルのみ＝a11y維持）。
+                rest は text-fg のまま清潔に保ち、hover/focus でリンク affordance を二重提示:
+                行全体に淡い accent ティント（bg-accent/5・陰影レス）＋ タイトルに accent＋下線
+                （prose リンク規約と統一）。 */}
             <h2 class="text-lg font-semibold tracking-tight">
               <a
-                class="text-fg no-underline transition-colors after:absolute after:inset-0 group-hover:text-accent group-focus-within:text-accent"
+                class="text-fg no-underline underline-offset-4 transition-colors after:absolute after:inset-0 group-hover:text-accent group-hover:underline group-focus-within:text-accent group-focus-within:underline"
                 href={`/articles/${article.id}/`}
               >
                 {article.data.title}
@@ -38,7 +41,7 @@ const articles = (await getCollection('articles')).sort(
             <p class="mt-1 text-sm leading-relaxed text-muted">
               {article.data.description}
             </p>
-            <p class="mt-2 flex items-center gap-2 text-xs text-muted">
+            <p class="mt-2 flex items-center gap-2 text-sm text-muted">
               <time datetime={article.data.publishedAt}>
                 {formatDateJa(article.data.publishedAt)}
               </time>
