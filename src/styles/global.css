@@ -54,9 +54,20 @@ body {
    末尾のオーファン行を抑えてラグを整える。未対応ブラウザは無視（=従来挙動）。 */
 :where(h1, h2, h3, h4) {
   text-wrap: balance;
+  /* CJK 禁則を厳格化（小書き仮名・長音符・句読点などの前で改行させない）。
+     日本語タイトルの分断点を整える（balance だけでは中黒/括弧内で割れることがある）。 */
+  line-break: strict;
 }
 :where(p, li) {
   text-wrap: pretty;
+}
+/* 日本語の見出し/タイトルを文節(Bunsetsu)境界で改行し、「括弧内・文中での不自然な分断」を防ぐ。
+   Chrome 119+ のみ対応＝@supports で限定し、非対応(Safari/Firefox)は既定の禁則にフォールバック。
+   balance と併用するのが日本語での推奨形（zero-JS・新規依存ゼロ・プログレッシブエンハンスメント）。 */
+@supports (word-break: auto-phrase) {
+  :where(h1, h2, h3, h4) {
+    word-break: auto-phrase;
+  }
 }
 
 /* 見出しアンカー「#」（zero-JS / 新規依存ゼロ）。astro.config の小さな rehype 関数が

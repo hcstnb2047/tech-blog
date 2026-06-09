@@ -80,6 +80,7 @@
 
 ## 折り返し品質 / 印刷（zero-JS）
 - **見出しの折り返し**: `:where(h1,h2,h3,h4)` に `text-wrap: balance`＝複数行見出しの行長を均等化し「ぶら下がり1単語」を防ぐ（清潔リッチ・タイポ階層 G3 の延長）。
+- **日本語見出しの分断品質（CJK 折り返し）**: 見出し/タイトルに `line-break: strict`＝小書き仮名・長音符・句読点などの前で改行させず禁則を厳格化する。さらに `@supports (word-break: auto-phrase)` 内で `word-break: auto-phrase` を付与し、**文節(Bunsetsu)境界で改行**して「括弧内・文中での不自然な分断」（例: 一覧/記事 h1 の `…で「安／全に公開する」`）を解消する。`auto-phrase` は Chrome 119+ のみ対応＝**非対応(Safari/Firefox)は既定の禁則にフォールバック**し、`balance` と併用するのが日本語での推奨形（zero-JS・新規依存ゼロ・プログレッシブエンハンスメント）。
 - **本文の折り返し**: `:where(p,li)` に `text-wrap: pretty`＝末尾のオーファン行を抑えラグを整える。いずれも `:where()`(specificity 0) で prose/Tailwind を阻害せず、未対応ブラウザは従来挙動（プログレッシブエンハンスメント・新規依存なし）。
 - **印刷 / PDF（`@media print`）**: 技術記事を紙/PDF で読む読者向けに本文を主役化。ヘッダー/フッター/目次(`nav[aria-label="目次"]`)/スキップリンクを `display:none`、OS がダークでも紙は `color-scheme:light`＋白地黒字に固定、`main` の幅/余白制約を解除、`pre/code` を `pre-wrap` で折り返し、本文中の外部リンク(`.prose a[href^="http"]`)に URL を `::after` で併記して参照先を辿れるようにする。すべて `@media print` 内＝画面表示に非干渉。
 
