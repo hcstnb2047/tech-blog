@@ -23,6 +23,9 @@ const articles = defineCollection({
     description: z.string(),
     // 公開日（YYYY-MM-DD のカレンダー日付）。
     publishedAt: z.string().date(),
+    // 分類タグ（任意・トップの一覧で「何系の検証か」を一目で示す軽量ラベル）。
+    // ※ allowlist の安全弁は維持: タグに PII/健康情報は書かない運用（チップ表示のみ・絞り込み機構なし）。
+    tags: z.array(z.string()).default([]),
     // 出典必須: 1件以上の {title, url} を要求する（無出典の公開を防ぐ）。
     sources: z
       .array(

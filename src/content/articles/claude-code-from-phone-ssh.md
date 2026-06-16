@@ -2,6 +2,9 @@
 title: スマホからSSHでAIエージェント（Claude Code）を動かす作業環境の作り方
 description: スマホから自宅サーバーにSSHで入り、その上のAIエージェント Claude Code を操作して開発を進める最小構成を解説する。Tailscale・SSH・tmux・ターミナルアプリの役割分担、回線が切れても作業が消えない tmux の要点、リモート実行があっても自前サーバーが効く理由をまとめる。
 publishedAt: "2026-06-08"
+tags:
+  - AIエージェント
+  - リモート開発
 sources:
   - title: Tailscale SSH（公式ドキュメント）
     url: https://tailscale.com/docs/features/tailscale-ssh

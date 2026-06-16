@@ -1,18 +1,45 @@
 # DESIGN.md — tech-blog（技術ノート）
 
 > 視覚ルール・デザイントークンの単一ソース。実装(`global.css`/`config.ts`/各 .astro)はこれを根拠に書く。
-> スタック: Astro v5(SSG) + Tailwind v4(@theme) + @tailwindcss/typography(prose) + Expressive Code。zero-JS志向(初期JS ≤ 50KB gzip)。
+> スタック: Astro v5(SSG) + Tailwind v4(@theme) + @tailwindcss/typography(prose) + Expressive Code。
+>   near-zero-JS志向: ランタイムJSは持たず、モーションは CSS-only。初期JS予算 ≤ 50KB gzip は維持。
+>   （将来 View Transitions を入れる場合のみ最小JSを許容＝現時点では入れない）。
 
-## 美的指向（zero-JS / 低メンテ / 清潔リッチ）
-- 本文を主役にした単一カラム・余白で階層を作る「清潔リッチ」。装飾より可読性。
-- フォントは system-ui 1系統のみ（フォント2種まで＝清潔さ優先）。色数は最小。
-- prefers-color-scheme 追従でライト/ダーク自動切替（zero-JS維持）。
+## 美的指向（二層構成：顔＝ラボノート / 本文＝清潔リッチ）
+このサイトは「検証の場（作って・動かして・確かめた記録）」であり、2つの役割を持つ二層構成。
+- **顔（トップ/一覧）＝ラボノート**: 第一印象で「この人いろいろ動かしてるな」と伝える。
+  惹きは"映え"でなく **タイトル＋タグ（分類）＋鮮度（最新の検証）**。装飾画像に頼らずテキスト先行で密度と新しさを見せる。
+- **本文（記事ページ）＝清潔リッチ（不変）**: 従来方針を維持。単一カラム・余白で階層・装飾より可読性・prose主役。
+  **記事ページ・TOC・コントラスト・SEO・404 はこの改修で触らない**（既に高品質）。
+- フォントは system-ui 1系統のまま（顔でも書体は増やさない＝レイアウト/分類/鮮度で個性を出す）。色数は最小。
+- prefers-color-scheme 追従でライト/ダーク自動切替（near-zero-JS維持）。
+
+## トップ＝ラボノートグリッド（顔・★iter2 主題転換 2026-06-16）
+> 「単調で退屈」を脱却するための顔の作り替え。**映えでなく鮮度＋分類で惹く**。grill 決定台帳 D1–D7 に基づく。
+- **鮮度（最新の検証）**: 記事を `publishedAt` 降順で出し、**最新1〜2件を前面**に置いて「いま検証してる感」を出す。
+  鮮度は **記事から自動導出**＝手書きの近況欄は作らない（更新を忘れて腐るため）。記事を書く＝近況が自動更新。
+- **カード**: 記事をテキスト先行カードで並べる。中身＝タイトル(font-semibold)＋説明1行＋**タグチップ**＋メタ(日付·読了)。
+  カバー画像は**使わない**（自動生成も今回スコープ外＝新規依存ゼロ・低メンテ。寂しければ後で再検討＝先回りしない）。
+  stretched-link（`after:absolute after:inset-0`）でカード全体1タップは踏襲。
+- **影の限定解禁**: 顔のカードに**限り**影を許可（従来「影レス」の例外。詳細は §カラートークン「影」）。
+  既定 `shadow-sm`、hover で `shadow-md`＋`-translate-y-0.5`（lift）。本文・記事ページの罫線方針は不変。
+- **モーション予算**: CSS-only の hover lift（transform/shadow の transition）のみ。
+  `prefers-reduced-motion: reduce` で lift・transition を無効化。JS製アニメーション（framer-motion 等）は入れない。
+
+## タグ（分類・軽量／色味で清潔さを壊さない）
+- **目的**: 「何系の検証か」を一目で。鮮度と並ぶ第2の惹き。`content.config.ts` の strictObject に `tags` を追加。
+- **PII安全弁の維持**: スキーマは公開可フィールドの allowlist。`tags` 追加後も健康/個人情報はタグに書かない運用。
+- **チップ体裁（虹色禁止）**: **全タグ同一の地味なスタイル**＝`border border-border`＋`bg-fg/[0.04]`（淡い地色・light/dark自動追従）
+  ＋`text-muted`＋`text-xs`＋`px-1.5 py-0.5`＋`rounded-md`。**タグごとに色を変えない・accent は使わない**。
+  罫線でチップの輪郭を出す（地色だけだとダーク背景に溶けて分類フックが効かない・ui-critic iter2 指摘）。
+  区別は**ラベル文字**でする（例「AIエージェント」「Astro」）。画面を持たせるのは色でなく構造（階層＋鮮度＋余白）。
+- **機構は作らない**: タグ別アーカイブ/絞り込みページは作らない（記事数が少ない現状では過剰・欲しくなってから）。
 
 ## タイポグラフィ
 - **本文**: prose 既定（16px / 行間≈1.75）。左揃え。
 - **読み幅**: 本文の1行を **60–75ch** に収める（現行 `max-w-2xl`＝約70–75ch。prose の `max-w-none` 上書きはコンテナ幅で制御）。
 - **見出し**: h1 = text-3xl / font-bold / leading-tight / tracking-tight。見出しは `tracking-tight`。
-- **トップのヒーロー（サイト名）**: 例外的に主役級。`text-4xl`（sm:`text-5xl`）/ font-bold / tracking-tight。下に `--muted` のタグライン（`SITE_DESCRIPTION`）を `mt-3`(12px) で添え、`pb-8`(32px)＋`border-b` で本文と分離。記事ページの h1（text-3xl）とは役割が異なる。
+- **トップのヒーロー（サイト名）**: 例外的に主役級。`text-4xl`（sm:`text-5xl`）/ font-bold / tracking-tight。ラボノートグリッドの上に置く。下に `--muted` のタグライン（`SITE_DESCRIPTION`）を `mt-3`(12px) で添え、`pb-8`(32px)＋`border-b` でグリッドと分離。**タグラインは「検証の場」だと伝える1行**（`config.ts` の `SITE_DESCRIPTION`＝「作って・動かして・確かめた」系・盛らない等身大）。記事ページの h1（text-3xl）とは役割が異なる。
 - **副次テキスト**: メタ情報・出典・footer は text-sm / text-muted。
 - フォント: `system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Segoe UI", Roboto, sans-serif`（global.css の `--font-sans` を昇格）。
 
@@ -28,10 +55,15 @@
 | `--fg`     | `#1f2328` | `#e6edf3` | 本文 |
 | `--muted`  | `#6b7280` | `#9aa4b2` | 副次テキスト |
 | `--accent` | `#2f5bd0` | `#6ea0ff` | リンク/強調 |
-| `--border` | `#e6e7e3` | `#262c36` | 罫線 |
+| `--border` | `#e6e7e3` | `#2b333d` | 罫線 |
+| `--card`   | `#ffffff` | `#171c23` | カードの面（顔のラボノートカードのみ・地から持ち上げる） |
 - `@theme` で `bg-bg/text-fg/text-muted/text-accent/border-border` として公開（dark 自動追従）。
 - **`color-scheme`**: `:root` に `color-scheme: light dark` を宣言。UA にライト/ダーク両対応を伝え、ネイティブUI（スクロールバー/フォーム部品）と CSS 適用前の初期描画もダーク時に背景へ追従させる（ダーク時の白フラッシュ防止・zero-JS）。`prefers-color-scheme` のトークン差し替えと併用。
-- **アクセント運用**: accent はリンク/フォーカス/選択ハイライトに限定（多用しない＝清潔リッチ）。影は使わず罫線(`--border`)で面を分ける方針を維持（light/dark とも陰影レス）。
+- **アクセント運用**: accent はリンク/フォーカス/選択ハイライトに限定（多用しない＝清潔リッチ）。タグチップには使わない（§タグ）。
+- **影**: 本文・記事ページは罫線(`--border`)で面を分ける方針を維持（light/dark とも陰影レス）。
+  **例外＝トップ（顔）のラボノートカードのみ影を許可**（`shadow-sm`／hover `shadow-md`＋lift）。影を使うのはこの1箇所に限定し、清潔リッチの本文には波及させない。
+- **カードの面（`--card`）＝ダークでの階層表現**: ダークでは影がほぼ不可視なので、カードは `bg-card`（bgより明るい面）で「持ち上がり」を**色**で示す（GitHub 等と同じ王道）。
+  影だけに頼ると light でしか階層が伝わらず「枠で囲っただけ」に見える問題への対処（実機ダーク＋スマホで体感ゼロだった指摘・iter2.1）。hover は dark で見えるよう `hover:border-fg/20`（罫線brighten）＋lift を併用。
 - **テキスト選択**: `::selection` を `color-mix(in srgb, var(--accent) 18%, transparent)` で淡く色付け（light/dark 自動追従・本文の可読性を保つ薄さ）。
 - **フォーカス可視化(a11y)**: `:where(a,button,[tabindex]):focus-visible` に `outline: 2px var(--accent)` + `outline-offset:2px`。マウス時は出さず（`:focus-visible`）キーボード操作時のみ表示。一覧カードは `group-focus-within:text-accent` で hover と同じ affordance をキーボードにも付与。
 - **トランジション**: リンクの色変化に `transition-colors`。`prefers-reduced-motion: reduce` で `transition-duration` を実質無効化（モーション過敏配慮）。
@@ -43,8 +75,12 @@
 - **コードブロック**: Expressive Code を主役級に（github-light/dark・行ハイライト・コピー）。
 - **インラインコード**: `prose-code:before/after:content-none` でバッククォート除去。`:not(pre)>code` のみを対象に淡い地色（`bg-fg/[0.06]`＝ライト/ダーク自動追従）＋ `px-1.5 py-0.5`＋`rounded-md`＋`text-[0.9em]`＋太字化しない（`font-normal`）。`:not(pre)>code` で限定し Expressive Code のブロックには干渉させない。
 - **本文見出しの縦リズム**: prose 既定の見出し余白は 8px グリッドに整合（h2 上48/下24px、h3 上32/下12px）ため上書きしない。記事 h1→`time`→本文は `mb-2`(8)→`mb-10`(40) でスケール内。
-- **密度**: 一覧は `py-5→py-6` のゆったりリズム。影は使わず罫線(`border-border`)で区切る。
-- **記事一覧の行**: タイトル(h2 / text-lg / font-semibold)＋ `description` 1行(text-sm / `--muted` / `mt-1`)＋メタ(time・読了時間 / text-sm / `--muted` / `mt-2`)。行は `group relative -mx-4 px-4 rounded-lg`、タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。**rest は `text-fg` で清潔に保ち、hover/focus でリンク affordance を二重提示**: 行に淡い accent ティント(`group-hover:bg-accent/5`・陰影レスで罫線方針と両立)＋タイトルに `group-hover:text-accent group-hover:underline`(下線は prose リンク規約§「リンク」と統一・`underline-offset-4`)。キーボードは `group-focus-within:` で同等。メタの日付は副次テキスト規約に合わせ `text-sm`(旧 text-xs はやや小さく可読性で `text-sm` に統一)。
+- **密度**: 顔はカードグリッド（モバイル1列 / sm以上2列）。カード内はゆったりした縦リズム。
+- **記事カード（iter2 で行→カードに変更）**: `group relative rounded-xl border border-border p-5 shadow-sm transition group-hover:shadow-md group-hover:-translate-y-0.5`。
+  中身＝タイトル(h2 / text-lg / font-semibold)＋ `description`(text-sm / `--muted` / `mt-1` / **`line-clamp-2`** でカード高さを揃える)＋**タグチップ列**(`mt-3`・§タグ)＋メタ(time・読了時間 / text-sm / `--muted` / `mt-auto pt-3` で下端揃え)。
+  タイトルの `<a>` に `after:absolute after:inset-0` を当てる stretched-link でカード全体を1タップ可能に（リンク文言はタイトルのみ＝a11y維持）。
+  **rest は `text-fg` で清潔に保ち、hover/focus でリンク affordance を二重提示**: タイトルに `group-hover:text-accent group-hover:underline`(`underline-offset-4`)。キーボードは `group-focus-within:` で同等。影の lift と reduced-motion は §トップ＝ラボノートグリッド。
+  **最新1〜2件は前面強調**（鮮度）＝先頭カードを `sm:col-span-2` で全幅にする等で「最新の検証」を大きく見せる。
 
 ## 目次（記事内 TOC）
 - **方針**: 技術記事のセクション間移動と deep-link を zero-JS で提供する。Astro が Markdown 見出しに自動採番する `id`（github-slugger）と `render()` の `headings` をそのまま使い、**rehype 等の新規依存は入れない**。
@@ -92,3 +128,7 @@
 | https://www.digitalsilk.com/digital-trends/minimalist-web-design-trends/ | 余白で階層・フォント2種まで | 美的指向/余白 |
 
 <!-- ui-iterate パイロット iter1（2026-06-07）で確定（フェーズ⑥承認済）。 -->
+<!-- iter2（2026-06-16）: 顔を「単調な一覧」→「ラボノートグリッド（鮮度＋分類）」に主題転換。grill-me 決定台帳 D1–D7 に基づく。
+     確定: 二層構成(顔=ラボノート/本文=清潔リッチ不変)・カバー画像なし(依存ゼロ)・軽量タグ(同色チップ・機構なし)・
+     影は顔のカードのみ限定解禁・鮮度は記事から自動導出(近況欄なし)・タグライン書換(検証の場)・サイト名据置。
+     スコープ外: 記事本文/TOC/SEO/404/カバー自動生成/タグ別ページ/View Transitions。 -->
