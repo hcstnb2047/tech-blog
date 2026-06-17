@@ -1,7 +1,10 @@
 ---
 title: このブログはどう作られているか — Astro × Vercel × CI で「安全に公開する」個人技術ブログ
-description: 個人の技術ブログを、ビルドの軽い静的サイトと「うっかり公開」を機械的に止める仕組みの二本柱で組んだ。Astro・Vercel・Content Collections・CIスキャンの構成と、各選定理由をまとめる。
+description: 個人の技術ブログを、ビルドの軽い静的サイトと「うっかり公開」を機械的に止める仕組みの二本柱で組んだ。Astro・Vercel・Content Collections・CIスキャンに加え、Tailwind v4 / Typography / Expressive Code による見た目の土台と、デザイン方針をコードに残す開発手法までまとめる。
 publishedAt: "2026-06-07"
+tags:
+  - Astro
+  - 個人開発
 sources:
   - title: Astro — Why Astro? (content-first / zero JS by default)
     url: https://docs.astro.build/en/concepts/why-astro/
@@ -13,6 +16,12 @@ sources:
     url: https://zod.dev/
   - title: Vercel — Deploy Astro
     url: https://vercel.com/docs/frameworks/astro
+  - title: Tailwind CSS（v4）
+    url: https://tailwindcss.com/
+  - title: "@tailwindcss/typography（prose プラグイン）"
+    url: https://github.com/tailwindlabs/tailwindcss-typography
+  - title: Expressive Code（コードブロック）
+    url: https://expressive-code.com/
 ---
 
 このブログは「**読むのが速い静的サイト**」と「**うっかり公開を機械で止める仕組み**」の二本柱で組んでいる。凝った機能はなく、構成は意図的に薄い。技術記事を出し続けるうえで最優先したのは、華やかさではなく「事故らずに続けられること」だからだ。
@@ -40,11 +49,24 @@ schema: z.strictObject({
   title: z.string(),
   description: z.string(),
   publishedAt: z.string().date(),
+  tags: z.array(z.string()).default([]), // 一覧での分類用（任意）
   sources: z.array(z.object({ title: z.string(), url: z.string().url() })).min(1),
 })
 ```
 
 ポイントは `strictObject` と `sources(...).min(1)` の2点だ。`strictObject` はスキーマに無いキーを拒否するので、**個人的な記録由来の余計なフィールドが紛れ込むとビルドが失敗する**。`min(1)` は出典ゼロの記事を弾く。「裏取りのない記事を公開しない」という方針を、運用ルールでなく仕組みで縛る狙いだ。
+
+`tags` のような表示用フィールドを後から足すときも、このスキーマに明示的に宣言して初めて通る。**「許可したものだけ載る」状態（allowlist）を保ったまま機能を増やせる**ので、フィールド追加は事故ではなく毎回の意思決定になる。
+
+## 見た目の土台: Tailwind v4 と Expressive Code
+
+スタイリングは Tailwind CSS v4 を `@tailwindcss/vite` 経由で入れている（2026 時点の推奨構成）。色や余白などのデザイントークンは CSS の `@theme` に集約し、ライト/ダークの切り替えは `prefers-color-scheme` に任せている。配色が変わってもスクリプトは動かないので、**テーマ切り替えでクライアント JavaScript は増えない**。
+
+記事本文は `@tailwindcss/typography`（prose）でまとめて整形し、コードブロックは Expressive Code に任せている。テーマ・行ハイライト・コピーボタン・ファイル名表示まで、技術記事で要る体裁が最初から揃う。Expressive Code のコピーボタンだけは小さな JS が付くが、これはフレームワークのランタイムではなく、**本文を読むのに JS を要求しない**という方針は崩していない。
+
+見出しの「#」リンクのような細かな機能も、新しい依存を足さずに付けている。Astro が見出しに採番する id をそのまま使い、生成済みのツリーを歩いて静的なリンクを差し込むだけの小さな処理にした。**「機能は足すが、依存とランタイム JS は増やさない」**を細部まで通すのが、軽さを保つための作法だ。
+
+そして、こうしたデザイン上の判断は `DESIGN.md` という1枚に集約している。トークンの値・読み幅・余白スケール・なぜその選択にしたかを言葉で残し、**見た目のルールが各ファイルに散らばって理由が消えるのを防ぐ**。スタイルの単一ソースを1か所に置くこと自体を、開発手法の一部にしている。
 
 ## 安全ゲート: CI でのスキャン
 
