@@ -28,3 +28,6 @@ pnpm-debug.log*
 
 # local MCP config (MDN server)
 .mcp.json
+
+# dependencies
+node_modules
