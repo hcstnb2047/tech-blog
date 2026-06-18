@@ -25,3 +25,6 @@ pnpm-debug.log*
 .idea/
 .vercel
 .ui-iterate/
+
+# local MCP config (MDN server)
+.mcp.json
