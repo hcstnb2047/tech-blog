@@ -7,12 +7,12 @@
   /* UA にライト/ダーク両対応を宣言。ネイティブUI（スクロールバー・フォーム部品）と
      CSS 適用前の初期描画をダーク時にも背景へ追従させ、白フラッシュを防ぐ（zero-JS）。 */
   color-scheme: light dark;
-  --bg: #fcfcfb;
+  --bg: #fbfaf7;
   --fg: #1f2328;
   --muted: #6b7280;
-  --accent: #2f5bd0;
-  --border: #e6e7e3;
-  /* カードの「持ち上がった面」。ライトは純白で地(#fcfcfb)からわずかに浮かせる。
+  --accent: #3b7a6f;
+  --border: #efeae2;
+  /* カードの「持ち上がった面」。ライトは純白で地(#fbfaf7)からわずかに浮かせる。
      影が見えないダークでは bg より明るい面色で階層を表す（GitHub 等と同じ王道）。 */
   --card: #ffffff;
 }
@@ -21,7 +21,7 @@
     --bg: #0e1116;
     --fg: #e6edf3;
     --muted: #9aa4b2;
-    --accent: #6ea0ff;
+    --accent: #6fb3a6;
     --border: #2b333d;
     /* bg(#0e1116) より明確に明るい面＝ダークで「カードが浮いている」ことを色で示す。 */
     --card: #171c23;

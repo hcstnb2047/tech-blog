@@ -51,11 +51,11 @@
 ## カラートークン（global.css から昇格・light / dark）
 | トークン | light | dark | 用途 |
 |---------|-------|------|------|
-| `--bg`     | `#fcfcfb` | `#0e1116` | 背景 |
+| `--bg`     | `#fbfaf7` | `#0e1116` | 背景（light はオフホワイト＝note的な紙の温さ） |
 | `--fg`     | `#1f2328` | `#e6edf3` | 本文 |
 | `--muted`  | `#6b7280` | `#9aa4b2` | 副次テキスト |
-| `--accent` | `#2f5bd0` | `#6ea0ff` | リンク/強調 |
-| `--border` | `#e6e7e3` | `#2b333d` | 罫線 |
+| `--accent` | `#3b7a6f` | `#6fb3a6` | リンク/強調（teal＝主張しない温色。冷たい青を退役・iter3） |
+| `--border` | `#efeae2` | `#2b333d` | 罫線（light はベージュ寄りで線を柔らかく） |
 | `--card`   | `#ffffff` | `#171c23` | カードの面（顔のラボノートカードのみ・地から持ち上げる） |
 - `@theme` で `bg-bg/text-fg/text-muted/text-accent/border-border` として公開（dark 自動追従）。
 - **`color-scheme`**: `:root` に `color-scheme: light dark` を宣言。UA にライト/ダーク両対応を伝え、ネイティブUI（スクロールバー/フォーム部品）と CSS 適用前の初期描画もダーク時に背景へ追従させる（ダーク時の白フラッシュ防止・zero-JS）。`prefers-color-scheme` のトークン差し替えと併用。
@@ -67,7 +67,7 @@
 - **テキスト選択**: `::selection` を `color-mix(in srgb, var(--accent) 18%, transparent)` で淡く色付け（light/dark 自動追従・本文の可読性を保つ薄さ）。
 - **フォーカス可視化(a11y)**: `:where(a,button,[tabindex]):focus-visible` に `outline: 2px var(--accent)` + `outline-offset:2px`。マウス時は出さず（`:focus-visible`）キーボード操作時のみ表示。一覧カードは `group-focus-within:text-accent` で hover と同じ affordance をキーボードにも付与。
 - **トランジション**: リンクの色変化に `transition-colors`。`prefers-reduced-motion: reduce` で `transition-duration` を実質無効化（モーション過敏配慮）。
-- **コントラスト(WCAG AA 客観確認 / 相対輝度で算出)**: light = muted/bg ≈ 4.76、accent/bg ≈ 5.86。dark = muted/bg ≈ 7.50、accent/bg ≈ 7.33。fg/bg は両モードとも十分高い。いずれも本文(4.5)基準を満たす。→ トークン値の変更は不要と判断。
+- **コントラスト(WCAG AA 客観確認 / 相対輝度で算出)**: light = muted/bg ≈ 4.76、accent/bg ≈ **4.79**（teal・iter3／accent/card白 ≈ 5.00）。dark = muted/bg ≈ 7.50、accent/bg ≈ **7.88**（teal・iter3）。fg/bg は両モードとも十分高い。いずれも本文(4.5)基準を満たす。→ teal化後も AA を維持（旧青 light 5.86/dark 7.33 から僅かに変動するが安全圏・トークン値は確定）。
 
 ## コンポーネント原則
 - **角丸**: Expressive Code は `borderRadius: 8px`。他要素も 8px 基調（inline code は `rounded-md`）。
@@ -132,3 +132,8 @@
      確定: 二層構成(顔=ラボノート/本文=清潔リッチ不変)・カバー画像なし(依存ゼロ)・軽量タグ(同色チップ・機構なし)・
      影は顔のカードのみ限定解禁・鮮度は記事から自動導出(近況欄なし)・タグライン書換(検証の場)・サイト名据置。
      スコープ外: 記事本文/TOC/SEO/404/カバー自動生成/タグ別ページ/View Transitions。 -->
+<!-- iter3（2026-06-30）: 色温度を温める（Zenn骨格は不変・note的な温さを足す）。「クール・技術寄り」に
+     見せていた冷たい青アクセント＋中立グレーを温色へ。確定: --accent 青#2f5bd0/#6ea0ff → teal#3b7a6f/#6fb3a6・
+     --bg light #fcfcfb→#fbfaf7（オフホワイト）・--border light #e6e7e3→#efeae2（ベージュ寄り）。
+     BaseLayout の theme-color(light) も #fbfaf7 に同期。WCAG AA 維持を相対輝度で再計算（light accent/bg 4.79・dark 7.88）。
+     スコープ外（不変）: 本文フォントサイズ(本文=清潔リッチ不変)・構造/タグ/TOC/SEO/404・dark bg。 -->
